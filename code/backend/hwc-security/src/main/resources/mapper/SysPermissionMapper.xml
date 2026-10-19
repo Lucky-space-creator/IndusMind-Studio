@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hwc.security.mapper.SysPermissionMapper">
+
+    <select id="selectPermissionCodes" resultType="java.lang.String">
+        SELECT DISTINCT p.code
+        FROM sys_permission p
+        INNER JOIN sys_role_permission rp ON rp.permission_id = p.id
+        WHERE rp.role_id IN
+        <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
+            #{roleId}
+        </foreach>
+        AND p.deleted = 0
+        AND (p.end_type = #{end} OR p.end_type = 'both')
+    </select>
+</mapper>

@@ -1,0 +1,55 @@
+server:
+  port: ${SERVER_PORT_USER:8080}
+
+spring:
+  application:
+    name: hwc-app-user
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:hwc}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_ROOT_PASSWORD:root}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 5s
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  jackson:
+    time-zone: Asia/Shanghai
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+hwc:
+  security:
+    end-type: user
+  jwt:
+    user-secret: ${JWT_USER_SECRET:hwc-user-jwt-secret-change-me-please-32bytes}
+    admin-secret: ${JWT_ADMIN_SECRET:hwc-admin-jwt-secret-change-me-please-32bytes}
+    expire-hours: ${JWT_EXPIRE_HOURS:12}
+  ai:
+    base-url: ${AI_SERVICE_BASE_URL:http://localhost:8100}
+    connect-timeout-ms: 5000
+    read-timeout-ms: 120000
+    retry-count: 1
+  minio:
+    endpoint: http://${MINIO_HOST:localhost}:${MINIO_API_PORT:9000}
+    access-key: ${MINIO_ROOT_USER:minioadmin}
+    secret-key: ${MINIO_ROOT_PASSWORD:minioadmin}
+
+logging:
+  level:
+    com.hwc: info

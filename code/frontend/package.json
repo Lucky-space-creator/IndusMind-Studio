@@ -1,0 +1,19 @@
+{
+  "name": "hwc-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "工业设备巡检与运维智能系统 - 前端双端单仓多包",
+  "scripts": {
+    "dev:user": "pnpm --filter @hwc/user-web dev",
+    "dev:admin": "pnpm --filter @hwc/admin-web dev",
+    "build:user": "pnpm --filter @hwc/user-web build",
+    "build:admin": "pnpm --filter @hwc/admin-web build",
+    "build:packages": "pnpm -r --filter './packages/*' build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint"
+  },
+  "engines": {
+    "node": ">=18"
+
+  }
+}

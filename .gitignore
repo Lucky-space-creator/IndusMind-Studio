@@ -1,0 +1,40 @@
+# Java build artifacts
+target/
+out/
+*.class
+*.jar
+
+# Node / frontend
+node_modules/
+dist/
+.pnpm-store/
+*.tsbuildinfo
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# CodeArts tool runtime
+.arts/
+.codeartsdoer/
+.codegraph/
+.merkle-snapshot.json
+
+# Logs
+logs/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Misc
+nul

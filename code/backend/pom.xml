@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.hwc</groupId>
+    <artifactId>hwc-parent</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>hwc-parent</name>
+    <description>工业设备巡检与运维智能系统 - Java 后端父工程</description>
+
+    <modules>
+        <module>hwc-common</module>
+        <module>hwc-common-web</module>
+        <module>hwc-security</module>
+        <module>hwc-domain</module>
+        <module>hwc-infra</module>
+        <module>hwc-ai-client</module>
+        <module>hwc-device</module>
+        <module>hwc-knowledge</module>
+        <module>hwc-docgraph</module>
+        <module>hwc-device-data</module>
+        <module>hwc-agent</module>
+        <module>hwc-publish</module>
+        <module>hwc-workorder</module>
+        <module>hwc-app-user</module>
+        <module>hwc-app-admin</module>
+    </modules>
+
+    <properties>
+        <!-- 环境适配：本机最高 JDK 17（无 JDK 21，网络受限不可下载）；Spring Boot 3.3 支持 17+，放弃虚拟线程特性 -->
+        <java.version>17</java.version>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spring-boot.version>3.3.5</spring-boot.version>
+        <mybatis-plus.version>3.5.7</mybatis-plus.version>
+        <jjwt.version>0.12.6</jjwt.version>
+        <hutool.version>5.8.27</hutool.version>
+        <tika.version>2.9.2</tika.version>
+        <openhtmltopdf.version>1.0.10</openhtmltopdf.version>
+        <minio.version>8.5.11</minio.version>
+        <springdoc.version>2.6.0</springdoc.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Spring Boot BOM：spring 全家桶版本由此统管 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- 内部模块 -->
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-common</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-common-web</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-security</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-domain</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-infra</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-ai-client</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-device</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-knowledge</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-docgraph</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-device-data</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-agent</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-publish</artifactId><version>${project.version}</version></dependency>
+            <dependency><groupId>com.hwc</groupId><artifactId>hwc-workorder</artifactId><version>${project.version}</version></dependency>
+            <!-- 持久层 -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-annotation</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <!-- JWT -->
+            <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-api</artifactId><version>${jjwt.version}</version></dependency>
+            <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-impl</artifactId><version>${jjwt.version}</version><scope>runtime</scope></dependency>
+            <dependency><groupId>io.jsonwebtoken</groupId><artifactId>jjwt-jackson</artifactId><version>${jjwt.version}</version><scope>runtime</scope></dependency>
+            <!-- 工具 -->
+            <dependency><groupId>cn.hutool</groupId><artifactId>hutool-all</artifactId><version>${hutool.version}</version></dependency>
+            <!-- 文档解析（知识库上传 pdf/docx → 文本） -->
+            <dependency><groupId>org.apache.tika</groupId><artifactId>tika-core</artifactId><version>${tika.version}</version></dependency>
+            <dependency><groupId>org.apache.tika</groupId><artifactId>tika-parsers-standard-package</artifactId><version>${tika.version}</version></dependency>
+            <!-- 工单 PDF 导出 -->
+            <dependency>
+                <groupId>com.openhtmltopdf</groupId>
+                <artifactId>openhtmltopdf-pdfbox</artifactId>
+                <version>${openhtmltopdf.version}</version>
+            </dependency>
+            <!-- 对象存储 -->
+            <dependency><groupId>io.minio</groupId><artifactId>minio</artifactId><version>${minio.version}</version></dependency>
+            <!-- 接口文档 -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.13.0</version>
+                    <configuration>
+                        <release>17</release>
+                        <parameters>true</parameters>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

@@ -1,0 +1,1569 @@
+{
+  "suite": "用户端接口测试（hwc-app-user :8180 测试端口）",
+  "baseUrl": "http://127.0.0.1:8180",
+  "cases": [
+    {
+      "id": "U-AUTH-01",
+      "name": "eng1 正常登录用户端",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/user/auth/login",
+      "json": {
+        "username": "eng1",
+        "password": "Demo@123"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.token",
+          "op": "exists"
+        },
+        {
+          "path": "data.userId",
+          "op": "exists"
+        },
+        {
+          "path": "data.username",
+          "op": "eq",
+          "value": "eng1"
+        },
+        {
+          "path": "data.end",
+          "op": "eq",
+          "value": "user"
+        },
+        {
+          "path": "data.roles[0]",
+          "op": "eq",
+          "value": "ENGINEER"
+        },
+        {
+          "path": "data.permissions",
+          "op": "sizeGte",
+          "value": 1
+        }
+      ],
+      "extract": {
+        "engToken": "data.token"
+      }
+    },
+    {
+      "id": "U-AUTH-02",
+      "name": "review1 双端账号登录用户端",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/user/auth/login",
+      "json": {
+        "username": "review1",
+        "password": "Demo@123"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.token",
+          "op": "exists"
+        },
+        {
+          "path": "data.roles[0]",
+          "op": "eq",
+          "value": "REVIEWER"
+        }
+      ],
+      "extract": {
+        "revToken": "data.token"
+      }
+    },
+    {
+      "id": "U-AUTH-03",
+      "name": "prod1 正常登录用户端",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/user/auth/login",
+      "json": {
+        "username": "prod1",
+        "password": "Demo@123"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "extract": {
+        "prodToken": "data.token"
+      }
+    },
+    {
+      "id": "U-AUTH-04",
+      "name": "错误密码登录被拒绝",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/auth/login",
+      "json": {
+        "username": "eng1",
+        "password": "Wrong@123"
+      },
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001",
+      "expectMessageContains": "用户名或密码错误"
+    },
+    {
+      "id": "U-AUTH-05",
+      "name": "不存在的用户登录被拒绝",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/auth/login",
+      "json": {
+        "username": "nobody",
+        "password": "Demo@123"
+      },
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001"
+    },
+    {
+      "id": "U-AUTH-06",
+      "name": "用户名为空触发参数校验",
+      "category": "BOUNDARY",
+      "method": "POST",
+      "path": "/api/user/auth/login",
+      "json": {
+        "username": "",
+        "password": "Demo@123"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "用户名不能为空"
+    },
+    {
+      "id": "U-AUTH-07",
+      "name": "admin 账号登录用户端被拒（端隔离）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/auth/login",
+      "json": {
+        "username": "admin",
+        "password": "Admin@123"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003",
+      "expectMessageContains": "该账号无权访问当前端"
+    },
+    {
+      "id": "U-AUTH-08",
+      "name": "无 Token 访问业务接口返回 401",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/user/dashboard",
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001",
+      "expectMessageContains": "未登录"
+    },
+    {
+      "id": "U-AUTH-09",
+      "name": "伪造 Token 返回 401",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/user/dashboard",
+      "headers": {
+        "Authorization": "Bearer fake.token.value"
+      },
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001"
+    },
+    {
+      "id": "U-DASH-01",
+      "name": "看板概览（全部设备最新快照）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/dashboard",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-DASH-02",
+      "name": "设备 1 看板历史快照分页",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/dashboard/devices/1/history",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "current": 1,
+        "size": 10
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.records",
+          "op": "exists"
+        },
+        {
+          "path": "data.current",
+          "op": "eq",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "U-DASH-03",
+      "name": "手动刷新看板快照（基于模拟数据集）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/user/dashboard/refresh",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "datasetId": "${datasetId}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.deviceId",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.healthScore",
+          "op": "gte",
+          "value": 0
+        },
+        {
+          "path": "data.healthScore",
+          "op": "lte",
+          "value": 100
+        },
+        {
+          "path": "data.status",
+          "op": "exists"
+        },
+        {
+          "path": "data.anomalyCount",
+          "op": "gte",
+          "value": 1
+        },
+        {
+          "path": "data.snapshotTime",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-DASH-04",
+      "name": "刷新不存在的数据集返回 404",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/dashboard/refresh",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "datasetId": 999999
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "数据集不存在"
+    },
+    {
+      "id": "U-DASH-05",
+      "name": "刷新后按设备过滤概览有快照",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/dashboard",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "deviceIds": "1,2"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "sizeGte",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "U-DASH-06",
+      "name": "prod1（仅只读权限）可刷新看板",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/user/dashboard/refresh",
+      "headers": {
+        "Authorization": "Bearer ${prodToken}"
+      },
+      "query": {
+        "datasetId": "${datasetId}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.healthScore",
+          "op": "gte",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "U-DEV-01",
+      "name": "设备分页默认参数",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/device/infos",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 3
+        },
+        {
+          "path": "data.records",
+          "op": "sizeGte",
+          "value": 3
+        },
+        {
+          "path": "data.records[0].code",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-DEV-02",
+      "name": "设备关键字过滤 CNC",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/device/infos",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "keyword": "CNC"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 2
+        },
+        {
+          "path": "data.records",
+          "op": "sizeGte",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "U-DEV-03",
+      "name": "设备详情 id=1",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/device/infos/1",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.id",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.code",
+          "op": "eq",
+          "value": "M01-CNC-001"
+        },
+        {
+          "path": "data.name",
+          "op": "exists"
+        },
+        {
+          "path": "data.status",
+          "op": "eq",
+          "value": "running"
+        }
+      ]
+    },
+    {
+      "id": "U-DEV-04",
+      "name": "不存在设备详情返回 404",
+      "category": "BOUNDARY",
+      "method": "GET",
+      "path": "/api/user/device/infos/999999",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "设备不存在"
+    },
+    {
+      "id": "U-DEV-05",
+      "name": "超大页码返回空记录",
+      "category": "BOUNDARY",
+      "method": "GET",
+      "path": "/api/user/device/infos",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "current": 999,
+        "size": 10
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.records",
+          "op": "sizeEq",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "U-DEV-06",
+      "name": "设备类型分页与详情",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/device/types",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "U-DEV-07",
+      "name": "按类型查询型号列表",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/device/types/1/models",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-DEV-08",
+      "name": "指标关键字过滤 spindle",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/device/metrics",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "keyword": "spindle"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "U-DEV-09",
+      "name": "指标阈值与告警规则查询",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/device/metrics/1/threshold",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "U-DEV-10",
+      "name": "指标 1 告警规则列表",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/device/metrics/1/alarm-rules",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-DEV-11",
+      "name": "备件分页",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/device/spare-parts",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "U-DEV-12",
+      "name": "停机损失标准列表",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/device/downtime-costs",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "sizeGte",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "U-KB-01",
+      "name": "知识库分页",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/knowledge/kbs",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "U-KB-02",
+      "name": "知识库详情 id=1",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/knowledge/kbs/1",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.id",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.name",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-KB-03",
+      "name": "不存在知识库详情返回 404",
+      "category": "BOUNDARY",
+      "method": "GET",
+      "path": "/api/user/knowledge/kbs/999999",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "知识库不存在"
+    },
+    {
+      "id": "U-KB-04",
+      "name": "文档分页按知识库过滤",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/knowledge/documents",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "kbId": 1
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "U-KB-05",
+      "name": "文档状态过滤 disabled",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/knowledge/documents",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "kbId": 1,
+        "status": "disabled"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "U-KB-06",
+      "name": "文档详情 id=1",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/knowledge/documents/1",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.id",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.docName",
+          "op": "exists"
+        },
+        {
+          "path": "data.status",
+          "op": "eq",
+          "value": "enabled"
+        }
+      ]
+    },
+    {
+      "id": "U-KB-07",
+      "name": "不存在文档详情返回 404",
+      "category": "BOUNDARY",
+      "method": "GET",
+      "path": "/api/user/knowledge/documents/999999",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "文档不存在"
+    },
+    {
+      "id": "U-KB-08",
+      "name": "知识检索（AI 服务可用，返回结果）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/user/knowledge/search",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "query": "主轴温度过高的处理方法",
+        "kbIds": [
+          1
+        ],
+        "topK": 5
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-KB-09",
+      "name": "知识检索空请求体（AI 参数校验失败被包装为 5100）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/knowledge/search",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {},
+      "expectHttp": 503,
+      "expectCode": 503,
+      "expectErrorCode": "COMMON_5100"
+    },
+    {
+      "id": "U-KB-10",
+      "name": "prod1 无知识检索权限被拒（403）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/knowledge/search",
+      "headers": {
+        "Authorization": "Bearer ${prodToken}"
+      },
+      "json": {
+        "query": "主轴温度"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "U-KB-11",
+      "name": "eng1 查询文档片段被拒（segment:read 属管理端 → 403）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/user/knowledge/documents/1/segments",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "U-KB-12",
+      "name": "review1 用户端 Token 查询片段仍被拒（端权限隔离 → 403）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/user/knowledge/documents/1/segments",
+      "headers": {
+        "Authorization": "Bearer ${revToken}"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "U-GRAPH-01",
+      "name": "eng1 查询溯源图节点被拒（docgraph:read 属管理端 → 403）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/user/docgraph/nodes",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "U-CHAT-01",
+      "name": "发起问答（新会话，AI 服务可用）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/user/chat",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "question": "主轴温度过高应该如何处理？",
+        "kbIds": [
+          1
+        ]
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.sessionId",
+          "op": "exists"
+        },
+        {
+          "path": "data.answer",
+          "op": "exists"
+        },
+        {
+          "path": "data.hit",
+          "op": "exists"
+        },
+        {
+          "path": "data.traceId",
+          "op": "exists"
+        }
+      ],
+      "extract": {
+        "sessionId": "data.sessionId"
+      }
+    },
+    {
+      "id": "U-CHAT-02",
+      "name": "同一会话追问",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/user/chat",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "sessionId": "${sessionId}",
+        "question": "那停机检修的步骤是什么？"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.sessionId",
+          "op": "eq",
+          "value": "${sessionId}"
+        },
+        {
+          "path": "data.answer",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-CHAT-03",
+      "name": "我的会话列表分页",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/chat/sessions",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "current": 1,
+        "size": 10
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].id",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-CHAT-04",
+      "name": "会话消息历史（两轮问答至少 4 条）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/chat/sessions/${sessionId}/messages",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "sizeGte",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "U-CHAT-05",
+      "name": "空问题被拒绝返回 400",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/chat",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "question": ""
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "问题不能为空"
+    },
+    {
+      "id": "U-CHAT-06",
+      "name": "不存在的会话追问返回 404",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/chat",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "sessionId": 999999,
+        "question": "测试"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "会话不存在"
+    },
+    {
+      "id": "U-CHAT-07",
+      "name": "不存在的会话消息历史返回 404",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/user/chat/sessions/999999/messages",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "会话不存在"
+    },
+    {
+      "id": "U-CHAT-08",
+      "name": "prod1 无问答权限被拒（403）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/chat",
+      "headers": {
+        "Authorization": "Bearer ${prodToken}"
+      },
+      "json": {
+        "question": "测试"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "U-CHAT-09",
+      "name": "特殊字符问题（XSS 注入尝试）安全处理",
+      "category": "BOUNDARY",
+      "method": "POST",
+      "path": "/api/user/chat",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "question": "<script>alert('x')</script>&&${injection}\"quote"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.answer",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-DIAG-01",
+      "name": "协同诊断带现象描述（正常路径）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/user/diagnosis/run",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "deviceId": 1,
+        "datasetId": "${datasetId}",
+        "phenomenon": "主轴温度持续偏高伴随异响"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.runId",
+          "op": "exists"
+        },
+        {
+          "path": "data.steps",
+          "op": "sizeGte",
+          "value": 1
+        },
+        {
+          "path": "data.riskLevel",
+          "op": "exists"
+        },
+        {
+          "path": "data.conclusion",
+          "op": "exists"
+        }
+      ],
+      "extract": {
+        "runId": "data.runId"
+      }
+    },
+    {
+      "id": "U-DIAG-01B",
+      "name": "协同诊断（无现象描述，正常路径）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/user/diagnosis/run",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "deviceId": 1,
+        "datasetId": "${datasetId}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.runId",
+          "op": "exists"
+        },
+        {
+          "path": "data.steps",
+          "op": "sizeGte",
+          "value": 1
+        },
+        {
+          "path": "data.riskLevel",
+          "op": "exists"
+        },
+        {
+          "path": "data.conclusion",
+          "op": "exists"
+        }
+      ],
+      "extract": {
+        "runId": "data.runId"
+      }
+    },
+    {
+      "id": "U-DIAG-02",
+      "name": "诊断记录分页并提取最新记录",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/diagnosis/records",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "current": 1,
+        "size": 10
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].id",
+          "op": "exists"
+        }
+      ],
+      "extract": {
+        "diagId": "data.records[0].id"
+      }
+    },
+    {
+      "id": "U-DIAG-03",
+      "name": "诊断详情含步骤",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/diagnosis/records/${diagId}",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.record.id",
+          "op": "eq",
+          "value": "${diagId}"
+        },
+        {
+          "path": "data.record.riskLevel",
+          "op": "exists"
+        },
+        {
+          "path": "data.steps",
+          "op": "exists"
+        }
+      ],
+      "extract": {
+        "runId": "data.record.runId"
+      }
+    },
+    {
+      "id": "U-DIAG-04",
+      "name": "诊断运行步骤列表",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/diagnosis/runs/${runId}/steps",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "sizeGte",
+          "value": 1
+        },
+        {
+          "path": "data[0].agentId",
+          "op": "exists"
+        },
+        {
+          "path": "data[0].status",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-DIAG-05",
+      "name": "诊断指定不存在设备返回 404",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/diagnosis/run",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "deviceId": 999999,
+        "datasetId": "${datasetId}"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "设备不存在"
+    },
+    {
+      "id": "U-DIAG-06",
+      "name": "诊断指定不存在数据集返回 400",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/diagnosis/run",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "deviceId": 1,
+        "datasetId": 999999
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "数据集不存在"
+    },
+    {
+      "id": "U-DIAG-07",
+      "name": "诊断指定不存在流程返回 404",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/diagnosis/run",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "deviceId": 1,
+        "datasetId": "${datasetId}",
+        "flowId": 999
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "协同流程不存在"
+    },
+    {
+      "id": "U-DIAG-08",
+      "name": "诊断请求缺 deviceId 返回 400",
+      "category": "BOUNDARY",
+      "method": "POST",
+      "path": "/api/user/diagnosis/run",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "datasetId": 1
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "deviceId"
+    },
+    {
+      "id": "U-DIAG-09",
+      "name": "prod1 无诊断发起权限被拒（403）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/diagnosis/run",
+      "headers": {
+        "Authorization": "Bearer ${prodToken}"
+      },
+      "json": {
+        "deviceId": 1,
+        "datasetId": "${datasetId}"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "U-DIAG-10",
+      "name": "诊断记录按设备与风险等级过滤",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/diagnosis/records",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "deviceId": 1,
+        "riskLevel": "high"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.records",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-WO-01",
+      "name": "工单分页（初始状态）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/workorders",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.records",
+          "op": "exists"
+        }
+      ]
+    },
+    {
+      "id": "U-WO-02",
+      "name": "依据诊断结论生成工单",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/user/workorders/generate",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "diagnosisId": "${diagId}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.id",
+          "op": "exists"
+        },
+        {
+          "path": "data.orderNo",
+          "op": "exists"
+        },
+        {
+          "path": "data.status",
+          "op": "eq",
+          "value": "generated"
+        }
+      ],
+      "extract": {
+        "orderId": "data.id"
+      }
+    },
+    {
+      "id": "U-WO-03",
+      "name": "工单详情含备件清单",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/workorders/${orderId}",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "U-WO-04",
+      "name": "工单导出 PDF 文件流",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/workorders/${orderId}/export",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": -999
+    },
+    {
+      "id": "U-WO-05",
+      "name": "同一诊断重复生成工单返回 400（已生成校验）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/workorders/generate",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "diagnosisId": "${diagId}"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100"
+    },
+    {
+      "id": "U-WO-06",
+      "name": "不存在工单详情返回 404",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/user/workorders/999999",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "工单不存在"
+    },
+    {
+      "id": "U-WO-07",
+      "name": "工单归档（MinIO 不可用，环境依赖 → 500）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/user/workorders/${orderId}/archive",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 500,
+      "expectCode": 500,
+      "expectErrorCode": "COMMON_5000"
+    },
+    {
+      "id": "U-WO-08",
+      "name": "工单按状态与单号关键字过滤",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/user/workorders",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "status": "generated",
+        "keyword": "WO-"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.records",
+          "op": "exists"
+        },
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "U-WO-09",
+      "name": "prod1 无工单查看权限被拒（403）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/user/workorders",
+      "headers": {
+        "Authorization": "Bearer ${prodToken}"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "U-WO-10",
+      "name": "不存在工单导出返回 404",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/user/workorders/999999/export",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004"
+    },
+    {
+      "id": "U-PERF-01",
+      "name": "性能：设备分页 30 次/5 并发",
+      "category": "PERF",
+      "method": "GET",
+      "path": "/api/user/device/infos",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "current": 1,
+        "size": 10
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "perf": {
+        "repeat": 30,
+        "concurrency": 5,
+        "p95Ms": 1500,
+        "avgMs": 600
+      }
+    },
+    {
+      "id": "U-PERF-02",
+      "name": "性能：看板概览 20 次/5 并发",
+      "category": "PERF",
+      "method": "GET",
+      "path": "/api/user/dashboard",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "perf": {
+        "repeat": 20,
+        "concurrency": 5,
+        "p95Ms": 2000,
+        "avgMs": 800
+      }
+    },
+    {
+      "id": "U-PERF-03",
+      "name": "性能：知识检索响应 10 次/2 并发（AI 服务可用）",
+      "category": "PERF",
+      "method": "POST",
+      "path": "/api/user/knowledge/search",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "query": "主轴温度",
+        "kbIds": [
+          1
+        ]
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "perf": {
+        "repeat": 10,
+        "concurrency": 2,
+        "p95Ms": 3000,
+        "avgMs": 1500
+      }
+    },
+    {
+      "id": "U-PERF-04",
+      "name": "性能：智能问答（后端→AI 链路）6 次/2 并发",
+      "category": "PERF",
+      "method": "POST",
+      "path": "/api/user/chat",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "json": {
+        "question": "设备点检流程是什么？"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "perf": {
+        "repeat": 6,
+        "concurrency": 2,
+        "p95Ms": 8000,
+        "avgMs": 4000
+      }
+    },
+    {
+      "id": "U-PERF-05",
+      "name": "性能：工单分页 20 次/5 并发",
+      "category": "PERF",
+      "method": "GET",
+      "path": "/api/user/workorders",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "query": {
+        "current": 1,
+        "size": 10
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "perf": {
+        "repeat": 20,
+        "concurrency": 5,
+        "p95Ms": 1200,
+        "avgMs": 500
+      }
+    }
+  ]
+}
