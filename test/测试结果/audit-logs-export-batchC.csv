@@ -1,0 +1,24 @@
+﻿id,operateTime,operatorId,operatorName,endpoint,module,action,targetType,targetId,result,errorMsg,ip,traceId,beforeValue,afterValue
+22,2026-10-05 23:59:59,1,admin,admin,test_mod,create,device,D-001,1,,192.168.1.10,tr-al-022,,"{""name"": ""CNC-01""}"
+21,2026-10-05 18:30:00,5,review1,admin,audit,export,audit_log,,1,,10.0.0.4,tr-al-021,,
+20,2026-10-05 15:45:00,1,admin,admin,account,create,user,15,1,,192.168.1.10,tr-al-020,,
+19,2026-10-05 12:00:00,2,config1,admin,account,update,user,14,1,,192.168.1.11,tr-al-019,,"{""status"": ""locked""}"
+18,2026-10-05 10:10:00,99,tester01,admin,test_mod,delete,widget,W-01,0,对象已被删除,10.0.0.3,tr-al-018,,
+17,2026-10-05 08:00:00,1,admin,admin,audit,export,audit_log,,1,,192.168.1.10,tr-al-017,,
+16,2026-10-04 16:30:00,5,review1,admin,test_mod,create,widget,W-03,1,,10.0.0.4,tr-al-016,,
+15,2026-10-04 14:15:00,2,config1,admin,account,create,user,14,1,,192.168.1.11,tr-al-015,,
+14,2026-10-04 11:00:00,1,admin,admin,account,delete,user,13,1,,192.168.1.10,tr-al-014,,
+13,2026-10-04 09:35:00,99,tester01,admin,audit,export,audit_log,,0,权限不足,10.0.0.3,tr-al-013,,
+12,2026-10-03 23:59:59,1,admin,admin,account,create,user,12,1,,192.168.1.10,tr-al-012,,"{""status"": ""created""}"
+11,2026-10-03 13:25:00,2,config1,admin,audit,export,audit_log,,1,,192.168.1.11,tr-al-011,,
+10,2026-10-03 10:40:00,1,admin,admin,test_mod,delete,widget,W-02,1,,192.168.1.10,tr-al-010,,
+9,2026-10-03 08:50:00,5,review1,admin,account,update,user,3,1,,10.0.0.4,tr-al-009,,"{""nick"": ""r1""}"
+8,2026-10-02 17:20:00,99,tester01,admin,account,create,user,11,0,参数校验失败：目标不存在,10.0.0.3,tr-al-008,,
+7,2026-10-02 15:00:00,1,admin,admin,audit,export,audit_log,,1,,192.168.1.10,tr-al-007,,
+6,2026-10-02 11:30:00,2,config1,admin,test_mod,update,widget,W-01,1,,192.168.1.11,tr-al-006,"{""level"": 1}","{""level"": 2}"
+5,2026-10-02 00:00:00,1,admin,admin,account,delete,user,10,1,,192.168.1.10,tr-al-005,,
+4,2026-10-01 16:45:30,5,review1,admin,audit,export,audit_log,,0,"含,逗号""双引号
+换行内容",10.0.0.4,tr-al-004,,
+3,2026-10-01 14:20:00,99,tester01,admin,test_mod,create,widget,W-01,1,,10.0.0.3,tr-al-003,,
+2,2026-10-01 10:15:00,2,config1,admin,account,delete,user,9,1,,192.168.1.11,tr-al-002,"{""status"": ""active""}",
+1,2026-10-01 08:30:00,1,admin,admin,account,create,user,3,1,,192.168.1.10,tr-al-001,,"{""status"": ""created""}"

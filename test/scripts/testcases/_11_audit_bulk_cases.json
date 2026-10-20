@@ -1,0 +1,79 @@
+{
+  "suite": "管理端审计导出上限专项（hwc-app-admin :8190 测试端口，需先执行 seed_audit_bulk.sql 造数 50001 条）",
+  "baseUrl": "http://127.0.0.1:8190",
+  "cases": [
+    {
+      "id": "B-AUTH-01",
+      "name": "admin 登录管理端（专项前置）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/auth/login",
+      "json": {
+        "username": "admin",
+        "password": "Admin@123"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "extract": {
+        "adminToken": "data.token"
+      }
+    },
+    {
+      "id": "A-AL2-12",
+      "name": "导出超上限拒绝（50,001 条 → 400 COMMON_4100，文案逐字断言）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs/export",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "beginTime": "2026-09-01 00:00:00",
+        "endTime": "2026-09-01 23:59:59"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "导出数据量超过上限(50000)，请缩小时间范围"
+    },
+    {
+      "id": "A-AL2-13",
+      "name": "导出审计自举②：上限被拒后存在 result=0 且 errorMsg 含上限文案的新记录",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "module": "audit",
+        "action": "export",
+        "operatorName": "admin",
+        "beginTime": "2026-10-06 00:00:00",
+        "size": 1
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.records[0].result", "op": "eq", "value": 0 },
+        { "path": "data.records[0].errorMsg", "op": "contains", "value": "导出数据量超过上限(50000)，请缩小时间范围" }
+      ]
+    },
+    {
+      "id": "A-AL2-14",
+      "name": "同批数据缩小时间范围（21,600 条 ≤ 上限）导出成功（耗时观察，spec 4.1-2 < 30s）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs/export",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "beginTime": "2026-09-01 00:00:00",
+        "endTime": "2026-09-01 06:00:00"
+      },
+      "expectHttp": 200,
+      "expectBodyContains": "id,operateTime,operatorId,operatorName,endpoint,module,action,targetType,targetId,result,errorMsg,ip,traceId,beforeValue,afterValue"
+    }
+  ]
+}

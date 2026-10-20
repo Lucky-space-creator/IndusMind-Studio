@@ -1564,6 +1564,28 @@
         "p95Ms": 1200,
         "avgMs": 500
       }
+    },
+    {
+      "id": "U-AL-01",
+      "name": "用户端实例访问管理端审计查询接口返回 404（end-type=user 不装配）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 404
+    },
+    {
+      "id": "U-AL-02",
+      "name": "用户端实例访问管理端审计导出接口返回 404（路由隔离防泄漏）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs/export",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 404
     }
   ]
 }

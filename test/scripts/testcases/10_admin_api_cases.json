@@ -3072,6 +3072,601 @@
         "p95Ms": 60000,
         "avgMs": 45000
       }
+    },
+    {
+      "id": "A-AL1-01",
+      "name": "审计日志默认分页（current=1/size=10，operateTime 降序）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 22 },
+        { "path": "data.size", "op": "eq", "value": 10 },
+        { "path": "data.current", "op": "eq", "value": 1 },
+        { "path": "data.records", "op": "sizeEq", "value": 10 },
+        { "path": "data.records[0].id", "op": "eq", "value": 22 },
+        { "path": "data.records[0].operateTime", "op": "eq", "value": "2026-10-05 23:59:59" },
+        { "path": "data.records[1].operateTime", "op": "eq", "value": "2026-10-05 18:30:00" }
+      ]
+    },
+    {
+      "id": "A-AL1-02",
+      "name": "审计日志分页 current=2&size=15（第 2 页 7 条 + 全量 total）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "current": 2,
+        "size": 15
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 22 },
+        { "path": "data.current", "op": "eq", "value": 2 },
+        { "path": "data.size", "op": "eq", "value": 15 },
+        { "path": "data.records", "op": "sizeEq", "value": 7 },
+        { "path": "data.records[0].id", "op": "eq", "value": 7 },
+        { "path": "data.records[0].operateTime", "op": "eq", "value": "2026-10-02 15:00:00" }
+      ]
+    },
+    {
+      "id": "A-AL1-03",
+      "name": "审计日志 operatorName=admin 等值过滤（全部记录 operatorName=admin）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "operatorName": "admin",
+        "size": 20
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 9 },
+        { "path": "data.records", "op": "sizeEq", "value": 9 },
+        { "path": "data.records[0].operatorName", "op": "eq", "value": "admin" },
+        { "path": "data.records[4].operatorName", "op": "eq", "value": "admin" },
+        { "path": "data.records[8].operatorName", "op": "eq", "value": "admin" },
+        { "path": "data.records[0].operateTime", "op": "eq", "value": "2026-10-05 23:59:59" }
+      ]
+    },
+    {
+      "id": "A-AL1-04",
+      "name": "审计日志 module=account 过滤",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "module": "account"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 10 },
+        { "path": "data.records[0].module", "op": "eq", "value": "account" }
+      ]
+    },
+    {
+      "id": "A-AL1-05",
+      "name": "审计日志 module=account&action=delete 组合过滤",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "module": "account",
+        "action": "delete"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 3 },
+        { "path": "data.records", "op": "sizeEq", "value": 3 },
+        { "path": "data.records[0].id", "op": "eq", "value": 14 },
+        { "path": "data.records[0].module", "op": "eq", "value": "account" },
+        { "path": "data.records[0].action", "op": "eq", "value": "delete" }
+      ]
+    },
+    {
+      "id": "A-AL1-06",
+      "name": "审计日志 beginTime/endTime 闭区间（边界时刻记录包含）",
+      "category": "BOUNDARY",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "beginTime": "2026-10-02 00:00:00",
+        "endTime": "2026-10-03 23:59:59",
+        "size": 20
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 8 },
+        { "path": "data.records", "op": "sizeEq", "value": 8 },
+        { "path": "data.records[0].operateTime", "op": "eq", "value": "2026-10-03 23:59:59" },
+        { "path": "data.records[7].operateTime", "op": "eq", "value": "2026-10-02 00:00:00" }
+      ]
+    },
+    {
+      "id": "A-AL1-07",
+      "name": "审计日志只传 beginTime（下限过滤）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "beginTime": "2026-10-04 00:00:00",
+        "size": 20
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 10 }
+      ]
+    },
+    {
+      "id": "A-AL1-08",
+      "name": "审计日志只传 endTime（上限过滤）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "endTime": "2026-10-01 23:59:59"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 4 }
+      ]
+    },
+    {
+      "id": "A-AL1-09",
+      "name": "审计日志时间格式秒级无 ISO T（expectBodyContains 时间串）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "endTime": "2026-10-01 23:59:59"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "expectBodyContains": "2026-10-01 08:30:00"
+    },
+    {
+      "id": "A-AL1-10",
+      "name": "审计日志无匹配条件返回空页（code=0 + records=[] + total=0）",
+      "category": "BOUNDARY",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "operatorName": "nobody_not_exist"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 0 },
+        { "path": "data.records", "op": "sizeEq", "value": 0 }
+      ]
+    },
+    {
+      "id": "A-AL1-11",
+      "name": "审计日志字段完备性（15 字段直透 + 特殊字符 errorMsg）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "module": "audit",
+        "action": "export",
+        "operatorName": "review1",
+        "endTime": "2026-10-05 23:59:59"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 2 },
+        { "path": "data.records[0].id", "op": "eq", "value": 21 },
+        { "path": "data.records[0].operatorId", "op": "eq", "value": 5 },
+        { "path": "data.records[0].operatorName", "op": "eq", "value": "review1" },
+        { "path": "data.records[0].endpoint", "op": "eq", "value": "admin" },
+        { "path": "data.records[0].module", "op": "eq", "value": "audit" },
+        { "path": "data.records[0].action", "op": "eq", "value": "export" },
+        { "path": "data.records[0].targetType", "op": "eq", "value": "audit_log" },
+        { "path": "data.records[0].targetId", "op": "isNull" },
+        { "path": "data.records[0].beforeValue", "op": "isNull" },
+        { "path": "data.records[0].afterValue", "op": "isNull" },
+        { "path": "data.records[0].result", "op": "eq", "value": 1 },
+        { "path": "data.records[0].errorMsg", "op": "isNull" },
+        { "path": "data.records[0].ip", "op": "eq", "value": "10.0.0.4" },
+        { "path": "data.records[0].traceId", "op": "eq", "value": "tr-al-021" },
+        { "path": "data.records[0].operateTime", "op": "eq", "value": "2026-10-05 18:30:00" },
+        { "path": "data.records[1].result", "op": "eq", "value": 0 },
+        { "path": "data.records[1].errorMsg", "op": "eq", "value": "含,逗号\"双引号\n换行内容" }
+      ]
+    },
+    {
+      "id": "A-AL1-12",
+      "name": "审计日志非法时间格式返回 400（不得 500）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "beginTime": "2026/10/01"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100"
+    },
+    {
+      "id": "A-AL1-13",
+      "name": "审计日志时间区间倒置返回 400",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "beginTime": "2026-10-05 00:00:00",
+        "endTime": "2026-10-01 00:00:00"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "开始时间不能晚于结束时间"
+    },
+    {
+      "id": "A-AL1-14",
+      "name": "审计日志 current=0 返回 400",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "current": 0
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100"
+    },
+    {
+      "id": "A-AL1-15",
+      "name": "审计日志 size=0 返回 400",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "size": 0
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100"
+    },
+    {
+      "id": "A-AL1-16",
+      "name": "审计日志 size=101 超上限返回 400",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "size": 101
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100"
+    },
+    {
+      "id": "A-AL1-17",
+      "name": "审计日志无 Token 访问返回 401",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001",
+      "expectMessageContains": "未登录或登录已过期"
+    },
+    {
+      "id": "A-AL1-18",
+      "name": "config1 无 audit:log:read 查询被拒（403）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${configToken}"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "A-AL1-19",
+      "name": "review1 持 audit:log:read 正常查询（分级权限反向验证）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${revToken}"
+      },
+      "query": {
+        "endTime": "2026-10-05 23:59:59"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 22 }
+      ]
+    },
+    {
+      "id": "A-AL1-20",
+      "name": "审计日志 current 超出总页数返回空 records（total 正确）",
+      "category": "BOUNDARY",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "current": 99,
+        "size": 15
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 22 },
+        { "path": "data.records", "op": "sizeEq", "value": 0 }
+      ]
+    },
+    {
+      "id": "A-AL2-01",
+      "name": "审计日志导出 CSV（15 列表头 + 首行为范围内最新记录）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs/export",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "beginTime": "2026-10-01 00:00:00",
+        "endTime": "2026-10-05 23:59:59"
+      },
+      "expectHttp": 200,
+      "expectBodyContains": "id,operateTime,operatorId,operatorName,endpoint,module,action,targetType,targetId,result,errorMsg,ip,traceId,beforeValue,afterValue\n22,2026-10-05 23:59:59,1,admin,admin,test_mod,create,device,D-001,1,,192.168.1.10,tr-al-022,"
+    },
+    {
+      "id": "A-AL2-02",
+      "name": "审计日志导出转义（含逗号/双引号/换行字段被双引号包裹）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs/export",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "beginTime": "2026-10-01 00:00:00",
+        "endTime": "2026-10-05 23:59:59"
+      },
+      "expectHttp": 200,
+      "expectBodyContains": "\"含,逗号\"\"双引号\n换行内容\""
+    },
+    {
+      "id": "A-AL2-03",
+      "name": "导出审计自举①：成功导出后存在 module=audit&action=export&result=1 新记录（id 大于产物内最大 id=22，产物不含自身）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "module": "audit",
+        "action": "export",
+        "operatorName": "admin",
+        "beginTime": "2026-10-06 00:00:00",
+        "size": 5
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.records[0].id", "op": "gte", "value": 23 },
+        { "path": "data.records[0].module", "op": "eq", "value": "audit" },
+        { "path": "data.records[0].action", "op": "eq", "value": "export" },
+        { "path": "data.records[0].result", "op": "eq", "value": 1 },
+        { "path": "data.records[0].operatorName", "op": "eq", "value": "admin" },
+        { "path": "data.records[0].targetType", "op": "eq", "value": "audit_log" }
+      ]
+    },
+    {
+      "id": "A-AL2-04",
+      "name": "导出无 Token 访问返回 401（无文件输出）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs/export",
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001",
+      "expectMessageContains": "未登录或登录已过期"
+    },
+    {
+      "id": "A-AL2-05",
+      "name": "review1 无 audit:log:export 导出被拒（403）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs/export",
+      "headers": {
+        "Authorization": "Bearer ${revToken}"
+      },
+      "query": {
+        "beginTime": "2026-10-01 00:00:00",
+        "endTime": "2026-10-05 23:59:59"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "A-AL2-06",
+      "name": "403 被拒后 review1 零新增 audit/export 审计记录（方法未执行不落审计）",
+      "category": "BOUNDARY",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "module": "audit",
+        "action": "export",
+        "operatorName": "review1",
+        "beginTime": "2026-10-06 00:00:00"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": 0 }
+      ]
+    },
+    {
+      "id": "A-AL2-07",
+      "name": "记录当前 admin 导出审计基数（供 A-AL2-09 对比）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "module": "audit",
+        "action": "export",
+        "operatorName": "admin",
+        "beginTime": "2026-10-06 00:00:00"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "extract": {
+        "auditExportTotal": "data.total"
+      }
+    },
+    {
+      "id": "A-AL2-08",
+      "name": "导出非法时间参数返回 400",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs/export",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "beginTime": "2026/10/01"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100"
+    },
+    {
+      "id": "A-AL2-09",
+      "name": "参数失败后零新增 audit/export 审计记录（total 与 A-AL2-07 一致）",
+      "category": "BOUNDARY",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "module": "audit",
+        "action": "export",
+        "operatorName": "admin",
+        "beginTime": "2026-10-06 00:00:00"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.total", "op": "eq", "value": "${auditExportTotal}" }
+      ]
+    },
+    {
+      "id": "A-AL2-10",
+      "name": "导出时间区间倒置返回 400",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/audit/logs/export",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "beginTime": "2026-10-05 00:00:00",
+        "endTime": "2026-10-01 00:00:00"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "开始时间不能晚于结束时间"
+    },
+    {
+      "id": "A-AL2-11",
+      "name": "导出审计自举（失败亦落）：区间倒置后存在 result=0 且 errorMsg 含倒置文案的新记录",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "module": "audit",
+        "action": "export",
+        "operatorName": "admin",
+        "beginTime": "2026-10-06 00:00:00",
+        "size": 1
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.records[0].result", "op": "eq", "value": 0 },
+        { "path": "data.records[0].errorMsg", "op": "contains", "value": "开始时间不能晚于结束时间" }
+      ]
     }
   ]
 }

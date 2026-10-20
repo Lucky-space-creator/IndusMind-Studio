@@ -5,7 +5,8 @@
 const { spawn, execSync } = require('child_process');
 const fs = require('fs');
 
-const ROOT = 'E:/JavaPro/HuaWeiCompetition';
+const path = require('path');
+const ROOT = path.resolve(__dirname, '../..');
 const LOG = ROOT + '/test/测试结果/logs';
 const JC = 'C:/Users/LENOVO/.m2/repository/com/fasterxml/jackson/core';
 const CP = `${JC}/jackson-databind/2.15.4/jackson-databind-2.15.4.jar;${JC}/jackson-core/2.15.4/jackson-core-2.15.4.jar;${JC}/jackson-annotations/2.15.4/jackson-annotations-2.15.4.jar`;
@@ -69,7 +70,7 @@ try {
     { cwd: ROOT, stdio: 'inherit', timeout: 250000 });
 
   console.log('=== 5. 执行接口测试 ===');
-  const testCmd = `java -cp "test/scripts/classes;${CP}" RunApiTests ${ROOT}/test ${suiteFilter}`.trim();
+  const testCmd = `java -cp "test/scripts/classes;${CP}" RunApiTests "${ROOT}/test" ${suiteFilter}`.trim();
   execSync(testCmd, { cwd: ROOT, stdio: 'inherit', timeout: 30 * 60 * 1000 });
 
   console.log('=== 测试完成 ===');
