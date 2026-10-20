@@ -1,0 +1,62 @@
+{
+  "suite": "账号权限跨端验证（用户端 8180 ↔ 管理端 8190，绝对路径用例）",
+  "baseUrl": "",
+  "cases": [
+    {
+      "id": "X-ACC-01",
+      "name": "场景②：绑定 ENGINEER 角色的新用户以初始密码登录用户端成功",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "http://127.0.0.1:8180/api/user/auth/login",
+      "json": {
+        "username": "${engAccName}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        { "path": "data.token", "op": "exists" },
+        { "path": "data.username", "op": "eq", "value": "${engAccName}" },
+        { "path": "data.end", "op": "eq", "value": "user" },
+        { "path": "data.roles[0]", "op": "eq", "value": "ENGINEER" }
+      ],
+      "extract": { "engAccUserToken": "data.token" }
+    },
+    {
+      "id": "X-ACC-02",
+      "name": "场景②：该用户登录管理端被拒 403（ENGINEER 为 user 端角色）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "http://127.0.0.1:8190/api/admin/auth/login",
+      "json": {
+        "username": "${engAccName}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003",
+      "expectMessageContains": "该账号无权访问当前端"
+    },
+    {
+      "id": "X-ACC-03",
+      "name": "用户端 Token 调管理端账号接口被拒 401（JWT 按端独立签发验签）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "http://127.0.0.1:8190/api/admin/account/users",
+      "headers": { "Authorization": "Bearer ${engAccUserToken}" },
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001"
+    },
+    {
+      "id": "X-ACC-04",
+      "name": "清理：管理员删除场景②验证账号",
+      "category": "NORMAL",
+      "method": "DELETE",
+      "path": "http://127.0.0.1:8190/api/admin/account/users/${engAccId}",
+      "headers": { "Authorization": "Bearer ${adminToken}" },
+      "expectHttp": 200,
+      "expectCode": 0
+    }
+  ]
+}

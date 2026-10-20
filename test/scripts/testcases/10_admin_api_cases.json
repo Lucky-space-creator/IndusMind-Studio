@@ -3085,14 +3085,45 @@
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 22 },
-        { "path": "data.size", "op": "eq", "value": 10 },
-        { "path": "data.current", "op": "eq", "value": 1 },
-        { "path": "data.records", "op": "sizeEq", "value": 10 },
-        { "path": "data.records[0].id", "op": "eq", "value": 22 },
-        { "path": "data.records[0].operateTime", "op": "eq", "value": "2026-10-05 23:59:59" },
-        { "path": "data.records[1].operateTime", "op": "eq", "value": "2026-10-05 18:30:00" }
-      ]
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 22
+        },
+        {
+          "path": "data.size",
+          "op": "eq",
+          "value": 10
+        },
+        {
+          "path": "data.current",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.records",
+          "op": "sizeEq",
+          "value": 10
+        },
+        {
+          "path": "data.records[0].id",
+          "op": "eq",
+          "value": 22
+        },
+        {
+          "path": "data.records[0].operateTime",
+          "op": "eq",
+          "value": "2026-10-05 23:59:59"
+        },
+        {
+          "path": "data.records[1].operateTime",
+          "op": "eq",
+          "value": "2026-10-05 18:30:00"
+        }
+      ],
+      "query": {
+        "endTime": "2026-10-05 23:59:59"
+      }
     },
     {
       "id": "A-AL1-02",
@@ -3105,17 +3136,42 @@
       },
       "query": {
         "current": 2,
-        "size": 15
+        "size": 15,
+        "endTime": "2026-10-05 23:59:59"
       },
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 22 },
-        { "path": "data.current", "op": "eq", "value": 2 },
-        { "path": "data.size", "op": "eq", "value": 15 },
-        { "path": "data.records", "op": "sizeEq", "value": 7 },
-        { "path": "data.records[0].id", "op": "eq", "value": 7 },
-        { "path": "data.records[0].operateTime", "op": "eq", "value": "2026-10-02 15:00:00" }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 22
+        },
+        {
+          "path": "data.current",
+          "op": "eq",
+          "value": 2
+        },
+        {
+          "path": "data.size",
+          "op": "eq",
+          "value": 15
+        },
+        {
+          "path": "data.records",
+          "op": "sizeEq",
+          "value": 7
+        },
+        {
+          "path": "data.records[0].id",
+          "op": "eq",
+          "value": 7
+        },
+        {
+          "path": "data.records[0].operateTime",
+          "op": "eq",
+          "value": "2026-10-02 15:00:00"
+        }
       ]
     },
     {
@@ -3129,17 +3185,42 @@
       },
       "query": {
         "operatorName": "admin",
-        "size": 20
+        "size": 20,
+        "endTime": "2026-10-05 23:59:59"
       },
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 9 },
-        { "path": "data.records", "op": "sizeEq", "value": 9 },
-        { "path": "data.records[0].operatorName", "op": "eq", "value": "admin" },
-        { "path": "data.records[4].operatorName", "op": "eq", "value": "admin" },
-        { "path": "data.records[8].operatorName", "op": "eq", "value": "admin" },
-        { "path": "data.records[0].operateTime", "op": "eq", "value": "2026-10-05 23:59:59" }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 9
+        },
+        {
+          "path": "data.records",
+          "op": "sizeEq",
+          "value": 9
+        },
+        {
+          "path": "data.records[0].operatorName",
+          "op": "eq",
+          "value": "admin"
+        },
+        {
+          "path": "data.records[4].operatorName",
+          "op": "eq",
+          "value": "admin"
+        },
+        {
+          "path": "data.records[8].operatorName",
+          "op": "eq",
+          "value": "admin"
+        },
+        {
+          "path": "data.records[0].operateTime",
+          "op": "eq",
+          "value": "2026-10-05 23:59:59"
+        }
       ]
     },
     {
@@ -3152,13 +3233,22 @@
         "Authorization": "Bearer ${adminToken}"
       },
       "query": {
-        "module": "account"
+        "module": "account",
+        "endTime": "2026-10-05 23:59:59"
       },
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 10 },
-        { "path": "data.records[0].module", "op": "eq", "value": "account" }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 10
+        },
+        {
+          "path": "data.records[0].module",
+          "op": "eq",
+          "value": "account"
+        }
       ]
     },
     {
@@ -3172,16 +3262,37 @@
       },
       "query": {
         "module": "account",
-        "action": "delete"
+        "action": "delete",
+        "endTime": "2026-10-05 23:59:59"
       },
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 3 },
-        { "path": "data.records", "op": "sizeEq", "value": 3 },
-        { "path": "data.records[0].id", "op": "eq", "value": 14 },
-        { "path": "data.records[0].module", "op": "eq", "value": "account" },
-        { "path": "data.records[0].action", "op": "eq", "value": "delete" }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 3
+        },
+        {
+          "path": "data.records",
+          "op": "sizeEq",
+          "value": 3
+        },
+        {
+          "path": "data.records[0].id",
+          "op": "eq",
+          "value": 14
+        },
+        {
+          "path": "data.records[0].module",
+          "op": "eq",
+          "value": "account"
+        },
+        {
+          "path": "data.records[0].action",
+          "op": "eq",
+          "value": "delete"
+        }
       ]
     },
     {
@@ -3201,10 +3312,26 @@
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 8 },
-        { "path": "data.records", "op": "sizeEq", "value": 8 },
-        { "path": "data.records[0].operateTime", "op": "eq", "value": "2026-10-03 23:59:59" },
-        { "path": "data.records[7].operateTime", "op": "eq", "value": "2026-10-02 00:00:00" }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 8
+        },
+        {
+          "path": "data.records",
+          "op": "sizeEq",
+          "value": 8
+        },
+        {
+          "path": "data.records[0].operateTime",
+          "op": "eq",
+          "value": "2026-10-03 23:59:59"
+        },
+        {
+          "path": "data.records[7].operateTime",
+          "op": "eq",
+          "value": "2026-10-02 00:00:00"
+        }
       ]
     },
     {
@@ -3218,12 +3345,17 @@
       },
       "query": {
         "beginTime": "2026-10-04 00:00:00",
-        "size": 20
+        "size": 20,
+        "endTime": "2026-10-05 23:59:59"
       },
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 10 }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 10
+        }
       ]
     },
     {
@@ -3241,7 +3373,11 @@
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 4 }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 4
+        }
       ]
     },
     {
@@ -3275,8 +3411,16 @@
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 0 },
-        { "path": "data.records", "op": "sizeEq", "value": 0 }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "path": "data.records",
+          "op": "sizeEq",
+          "value": 0
+        }
       ]
     },
     {
@@ -3297,24 +3441,92 @@
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 2 },
-        { "path": "data.records[0].id", "op": "eq", "value": 21 },
-        { "path": "data.records[0].operatorId", "op": "eq", "value": 5 },
-        { "path": "data.records[0].operatorName", "op": "eq", "value": "review1" },
-        { "path": "data.records[0].endpoint", "op": "eq", "value": "admin" },
-        { "path": "data.records[0].module", "op": "eq", "value": "audit" },
-        { "path": "data.records[0].action", "op": "eq", "value": "export" },
-        { "path": "data.records[0].targetType", "op": "eq", "value": "audit_log" },
-        { "path": "data.records[0].targetId", "op": "isNull" },
-        { "path": "data.records[0].beforeValue", "op": "isNull" },
-        { "path": "data.records[0].afterValue", "op": "isNull" },
-        { "path": "data.records[0].result", "op": "eq", "value": 1 },
-        { "path": "data.records[0].errorMsg", "op": "isNull" },
-        { "path": "data.records[0].ip", "op": "eq", "value": "10.0.0.4" },
-        { "path": "data.records[0].traceId", "op": "eq", "value": "tr-al-021" },
-        { "path": "data.records[0].operateTime", "op": "eq", "value": "2026-10-05 18:30:00" },
-        { "path": "data.records[1].result", "op": "eq", "value": 0 },
-        { "path": "data.records[1].errorMsg", "op": "eq", "value": "含,逗号\"双引号\n换行内容" }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 2
+        },
+        {
+          "path": "data.records[0].id",
+          "op": "eq",
+          "value": 21
+        },
+        {
+          "path": "data.records[0].operatorId",
+          "op": "eq",
+          "value": 5
+        },
+        {
+          "path": "data.records[0].operatorName",
+          "op": "eq",
+          "value": "review1"
+        },
+        {
+          "path": "data.records[0].endpoint",
+          "op": "eq",
+          "value": "admin"
+        },
+        {
+          "path": "data.records[0].module",
+          "op": "eq",
+          "value": "audit"
+        },
+        {
+          "path": "data.records[0].action",
+          "op": "eq",
+          "value": "export"
+        },
+        {
+          "path": "data.records[0].targetType",
+          "op": "eq",
+          "value": "audit_log"
+        },
+        {
+          "path": "data.records[0].targetId",
+          "op": "isNull"
+        },
+        {
+          "path": "data.records[0].beforeValue",
+          "op": "isNull"
+        },
+        {
+          "path": "data.records[0].afterValue",
+          "op": "isNull"
+        },
+        {
+          "path": "data.records[0].result",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].errorMsg",
+          "op": "isNull"
+        },
+        {
+          "path": "data.records[0].ip",
+          "op": "eq",
+          "value": "10.0.0.4"
+        },
+        {
+          "path": "data.records[0].traceId",
+          "op": "eq",
+          "value": "tr-al-021"
+        },
+        {
+          "path": "data.records[0].operateTime",
+          "op": "eq",
+          "value": "2026-10-05 18:30:00"
+        },
+        {
+          "path": "data.records[1].result",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "path": "data.records[1].errorMsg",
+          "op": "eq",
+          "value": "含,逗号\"双引号\n换行内容"
+        }
       ]
     },
     {
@@ -3438,7 +3650,11 @@
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 22 }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 22
+        }
       ]
     },
     {
@@ -3452,13 +3668,22 @@
       },
       "query": {
         "current": 99,
-        "size": 15
+        "size": 15,
+        "endTime": "2026-10-05 23:59:59"
       },
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 22 },
-        { "path": "data.records", "op": "sizeEq", "value": 0 }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 22
+        },
+        {
+          "path": "data.records",
+          "op": "sizeEq",
+          "value": 0
+        }
       ]
     },
     {
@@ -3512,12 +3737,36 @@
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.records[0].id", "op": "gte", "value": 23 },
-        { "path": "data.records[0].module", "op": "eq", "value": "audit" },
-        { "path": "data.records[0].action", "op": "eq", "value": "export" },
-        { "path": "data.records[0].result", "op": "eq", "value": 1 },
-        { "path": "data.records[0].operatorName", "op": "eq", "value": "admin" },
-        { "path": "data.records[0].targetType", "op": "eq", "value": "audit_log" }
+        {
+          "path": "data.records[0].id",
+          "op": "gte",
+          "value": 23
+        },
+        {
+          "path": "data.records[0].module",
+          "op": "eq",
+          "value": "audit"
+        },
+        {
+          "path": "data.records[0].action",
+          "op": "eq",
+          "value": "export"
+        },
+        {
+          "path": "data.records[0].result",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].operatorName",
+          "op": "eq",
+          "value": "admin"
+        },
+        {
+          "path": "data.records[0].targetType",
+          "op": "eq",
+          "value": "audit_log"
+        }
       ]
     },
     {
@@ -3566,7 +3815,11 @@
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": 0 }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 0
+        }
       ]
     },
     {
@@ -3624,7 +3877,11 @@
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.total", "op": "eq", "value": "${auditExportTotal}" }
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": "${auditExportTotal}"
+        }
       ]
     },
     {
@@ -3664,9 +3921,1897 @@
       "expectHttp": 200,
       "expectCode": 0,
       "asserts": [
-        { "path": "data.records[0].result", "op": "eq", "value": 0 },
-        { "path": "data.records[0].errorMsg", "op": "contains", "value": "开始时间不能晚于结束时间" }
+        {
+          "path": "data.records[0].result",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "path": "data.records[0].errorMsg",
+          "op": "contains",
+          "value": "开始时间不能晚于结束时间"
+        }
       ]
+    },
+    {
+      "id": "A-ACC-U2-01",
+      "name": "创建用户成功（绑定角色，返回不含密码，extract id/username 备用）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "acct${TS}",
+        "password": "Init@12345",
+        "nickname": "验收工程师${TS}",
+        "phone": "13800001111",
+        "email": "acct${TS}@test.com",
+        "roleIds": [
+          3
+        ],
+        "status": 1
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.id",
+          "op": "exists"
+        },
+        {
+          "path": "data.username",
+          "op": "eq",
+          "value": "acct${TS}"
+        },
+        {
+          "path": "data.status",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.roleIds",
+          "op": "sizeEq",
+          "value": 1
+        },
+        {
+          "path": "data.roleIds[0]",
+          "op": "eq",
+          "value": 3
+        },
+        {
+          "path": "data.password",
+          "op": "notExists"
+        }
+      ],
+      "extract": {
+        "accUserId": "data.id",
+        "accUserName": "data.username"
+      }
+    },
+    {
+      "id": "A-ACC-U1-01",
+      "name": "用户默认分页（current=1/size=10，id 升序，响应无 password 字段）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.current",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.size",
+          "op": "eq",
+          "value": 10
+        },
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 6
+        },
+        {
+          "path": "data.records",
+          "op": "sizeLte",
+          "value": 10
+        },
+        {
+          "path": "data.records[0].id",
+          "op": "exists"
+        },
+        {
+          "path": "data.records[0].roleIds",
+          "op": "exists"
+        },
+        {
+          "path": "data.records[0].password",
+          "op": "notExists"
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-U1-02",
+      "name": "用户分页 current=2&size=2（第 2 页满页 2 条）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "current": 2,
+        "size": 2
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.current",
+          "op": "eq",
+          "value": 2
+        },
+        {
+          "path": "data.size",
+          "op": "eq",
+          "value": 2
+        },
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 6
+        },
+        {
+          "path": "data.records",
+          "op": "sizeEq",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-U1-03",
+      "name": "用户 keyword 用户名模糊匹配不区分大小写（大写 ACCT 命中 acct）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "keyword": "ACCT${TS}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].username",
+          "op": "eq",
+          "value": "${accUserName}"
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-U1-04",
+      "name": "用户 keyword 昵称模糊匹配（中文昵称命中）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "keyword": "验收工程师${TS}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].username",
+          "op": "eq",
+          "value": "${accUserName}"
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-U1-05",
+      "name": "用户 roleIds 装配断言（绑定 [3] 的账号 roleIds=[3]，无 password）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "keyword": "acct${TS}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].roleIds",
+          "op": "sizeEq",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].roleIds[0]",
+          "op": "eq",
+          "value": 3
+        },
+        {
+          "path": "data.records[0].password",
+          "op": "notExists"
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-U2-02",
+      "name": "创建用户用户名冲突返回 409（COMMON_4009 用户名已存在）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "acct${TS}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 409,
+      "expectCode": 409,
+      "expectErrorCode": "COMMON_4009",
+      "expectMessageContains": "用户名已存在"
+    },
+    {
+      "id": "A-ACC-U2-03",
+      "name": "创建用户密码过短返回 400（<8 位）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "accshort${TS}",
+        "password": "Ab@1"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100"
+    },
+    {
+      "id": "A-ACC-U2-04",
+      "name": "创建用户 roleIds 含不存在 id 返回 400（角色不存在: 9999，触发关联写入失败回滚）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "accx${TS}",
+        "password": "Init@12345",
+        "roleIds": [
+          9999
+        ]
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "角色不存在: 9999"
+    },
+    {
+      "id": "A-ACC-U2-05",
+      "name": "原子性验证：roleIds 校验失败后账号不落库（keyword 查无 accx 账号）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "keyword": "accx${TS}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "path": "data.records",
+          "op": "sizeEq",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-U2-06",
+      "name": "创建无角色账号成功（不携带 roleIds，允许空绑定）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "acctnr${TS}",
+        "password": "Init@12345",
+        "nickname": "无角色账号${TS}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.username",
+          "op": "eq",
+          "value": "acctnr${TS}"
+        },
+        {
+          "path": "data.roleIds",
+          "op": "sizeEq",
+          "value": 0
+        }
+      ],
+      "extract": {
+        "nrUserId": "data.id"
+      }
+    },
+    {
+      "id": "A-ACC-U1-06",
+      "name": "无角色账号列表断言 roleIds=[]（空数组非 null）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "keyword": "acctnr${TS}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].roleIds",
+          "op": "sizeEq",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-U3-01",
+      "name": "更新用户成功（nickname/phone/email）",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/users/${accUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "nickname": "昵称已改${TS}",
+        "phone": "13900002222",
+        "email": "new${TS}@test.com"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-U3-02",
+      "name": "更新不存在用户返回 404（COMMON_4004 账号不存在）",
+      "category": "EXCEPTION",
+      "method": "PUT",
+      "path": "/api/admin/account/users/999999",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "nickname": "任何人"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "账号不存在"
+    },
+    {
+      "id": "A-ACC-U3-03",
+      "name": "更新用户 username 不可变（提交不同用户名返回 400）",
+      "category": "EXCEPTION",
+      "method": "PUT",
+      "path": "/api/admin/account/users/${accUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "renamed${TS}"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "用户名不允许修改"
+    },
+    {
+      "id": "A-ACC-U3-04",
+      "name": "更新用户携带相同 username 放行（与现值一致不拒绝）",
+      "category": "BOUNDARY",
+      "method": "PUT",
+      "path": "/api/admin/account/users/${accUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "${accUserName}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-U3-05",
+      "name": "更新用户 roleIds 全量覆盖（[3]→[4]）",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/users/${accUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "roleIds": [
+          4
+        ]
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-U3-06",
+      "name": "覆盖后重查 roleIds=[4] 且 nickname 已更新（两段式装配正确）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "keyword": "acct${TS}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].roleIds",
+          "op": "sizeEq",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].roleIds[0]",
+          "op": "eq",
+          "value": 4
+        },
+        {
+          "path": "data.records[0].nickname",
+          "op": "contains",
+          "value": "昵称已改"
+        },
+        {
+          "path": "data.records[0].phone",
+          "op": "eq",
+          "value": "13900002222"
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-U3-07",
+      "name": "更新用户不提交 roleIds（缺省不变更语义）",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/users/${accUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "nickname": "再次改名${TS}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-U3-08",
+      "name": "缺省更新后重查 roleIds 保持 [4]（未被误清空）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "keyword": "acct${TS}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.records[0].roleIds",
+          "op": "sizeEq",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].roleIds[0]",
+          "op": "eq",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-U3-09",
+      "name": "更新用户 roleIds=[] 清空全部角色",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/users/${accUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "roleIds": []
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-U3-10",
+      "name": "清空后重查 roleIds=[]（关联已物理删除）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "keyword": "acct${TS}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.records[0].roleIds",
+          "op": "sizeEq",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-U3-11",
+      "name": "更新用户 status=0 停用（为 status 过滤与令牌失效场景准备）",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/users/${accUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "status": 0
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-U3-12",
+      "name": "用户列表 status=0 过滤（仅返回停用账号，命中目标账号）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "keyword": "acct${TS}",
+        "status": 0
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].status",
+          "op": "eq",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-U4-01",
+      "name": "删除用户成功（逻辑删除）",
+      "category": "NORMAL",
+      "method": "DELETE",
+      "path": "/api/admin/account/users/${accUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-U4-02",
+      "name": "删除后同名重建成功（uk(username,deleted) 支持用户名复用）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "${accUserName}",
+        "password": "Init@12345",
+        "roleIds": [
+          3
+        ]
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.username",
+          "op": "eq",
+          "value": "${accUserName}"
+        }
+      ],
+      "extract": {
+        "reusedUserId": "data.id"
+      }
+    },
+    {
+      "id": "A-ACC-U4-03",
+      "name": "删除重建账号（清理，保持用户名可再次复用）",
+      "category": "NORMAL",
+      "method": "DELETE",
+      "path": "/api/admin/account/users/${reusedUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-U4-04",
+      "name": "删除内置 admin 账号被拒（400 内置管理员账号不允许删除）",
+      "category": "EXCEPTION",
+      "method": "DELETE",
+      "path": "/api/admin/account/users/1",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "内置管理员账号不允许删除"
+    },
+    {
+      "id": "A-ACC-U4-05",
+      "name": "创建持 ADMIN 角色临时账号（自删保护用例准备）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "accself${TS}",
+        "password": "Init@12345",
+        "roleIds": [
+          1
+        ]
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "extract": {
+        "selfUserId": "data.id",
+        "selfUserName": "data.username"
+      }
+    },
+    {
+      "id": "A-ACC-U4-06",
+      "name": "临时账号登录管理端（持 account:user:delete 权限）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/auth/login",
+      "json": {
+        "username": "${selfUserName}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.roles[0]",
+          "op": "eq",
+          "value": "ADMIN"
+        }
+      ],
+      "extract": {
+        "selfToken": "data.token"
+      }
+    },
+    {
+      "id": "A-ACC-U4-07",
+      "name": "删除当前登录账号被拒（400 不能删除当前登录账号）",
+      "category": "EXCEPTION",
+      "method": "DELETE",
+      "path": "/api/admin/account/users/${selfUserId}",
+      "headers": {
+        "Authorization": "Bearer ${selfToken}"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "不能删除当前登录账号"
+    },
+    {
+      "id": "A-ACC-U4-08",
+      "name": "管理员删除临时账号（清理自删保护用例数据）",
+      "category": "NORMAL",
+      "method": "DELETE",
+      "path": "/api/admin/account/users/${selfUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-U4-09",
+      "name": "删除不存在用户返回 404",
+      "category": "EXCEPTION",
+      "method": "DELETE",
+      "path": "/api/admin/account/users/999999",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "账号不存在"
+    },
+    {
+      "id": "A-ACC-R1-01",
+      "name": "角色全量列表（5 内置角色齐备、builtIn/endType 字段完备）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/roles",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "sizeGte",
+          "value": 5
+        },
+        {
+          "path": "data",
+          "op": "contains",
+          "value": "\"code\":\"ADMIN\""
+        },
+        {
+          "path": "data",
+          "op": "contains",
+          "value": "\"code\":\"CONFIGURATOR\""
+        },
+        {
+          "path": "data",
+          "op": "contains",
+          "value": "\"code\":\"ENGINEER\""
+        },
+        {
+          "path": "data",
+          "op": "contains",
+          "value": "\"code\":\"PRODUCER\""
+        },
+        {
+          "path": "data",
+          "op": "contains",
+          "value": "\"code\":\"REVIEWER\""
+        },
+        {
+          "path": "data",
+          "op": "contains",
+          "value": "\"builtIn\":1"
+        },
+        {
+          "path": "data",
+          "op": "contains",
+          "value": "\"endType\":\"both\""
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-R2-01",
+      "name": "创建角色成功（builtIn 恒为 0，绑定权限 [46,49]）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/account/roles",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "code": "ACC_ROLE_${TS}",
+        "name": "验收自定义角色${TS}",
+        "endType": "admin",
+        "description": "账号权限接口验收用自定义角色",
+        "permissionIds": [
+          46,
+          49
+        ]
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.id",
+          "op": "exists"
+        },
+        {
+          "path": "data.code",
+          "op": "eq",
+          "value": "ACC_ROLE_${TS}"
+        },
+        {
+          "path": "data.builtIn",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "path": "data.endType",
+          "op": "eq",
+          "value": "admin"
+        }
+      ],
+      "extract": {
+        "accRoleId": "data.id"
+      }
+    },
+    {
+      "id": "A-ACC-R2-02",
+      "name": "创建角色编码冲突返回 409（COMMON_4009 角色编码已存在）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/account/roles",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "code": "ACC_ROLE_${TS}",
+        "name": "重复角色",
+        "endType": "admin"
+      },
+      "expectHttp": 409,
+      "expectCode": 409,
+      "expectErrorCode": "COMMON_4009",
+      "expectMessageContains": "角色编码已存在"
+    },
+    {
+      "id": "A-ACC-R2-03",
+      "name": "创建角色 endType 非法值返回 400（@Pattern 拦截）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/account/roles",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "code": "BAD_END_${TS}",
+        "name": "非法端角色",
+        "endType": "xxx"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "user/admin/both"
+    },
+    {
+      "id": "A-ACC-R2-04",
+      "name": "创建角色 permissionIds 含不存在 id 返回 400（权限点不存在: 9999）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/account/roles",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "code": "BAD_PERM_${TS}",
+        "name": "非法权限角色",
+        "endType": "admin",
+        "permissionIds": [
+          9999
+        ]
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "权限点不存在: 9999"
+    },
+    {
+      "id": "A-ACC-R3-01",
+      "name": "更新自定义角色仅改 name（不提交 permissionIds，权限保持前提）",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/${accRoleId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "name": "验收自定义角色改名${TS}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-R3-02",
+      "name": "更新内置角色编码被拒（400 内置角色编码不允许修改）",
+      "category": "EXCEPTION",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/2",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "code": "CONFIGURATOR_NEW"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "内置角色编码不允许修改"
+    },
+    {
+      "id": "A-ACC-R3-03",
+      "name": "更新内置角色名称成功（允许改 name）",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/2",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "name": "配置员(验收临时)"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-R3-04",
+      "name": "恢复内置角色名称（清理临时改动）",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/2",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "name": "配置员"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-R3-05",
+      "name": "更新不存在角色返回 404",
+      "category": "EXCEPTION",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/999999",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "name": "任何人"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "角色不存在"
+    },
+    {
+      "id": "A-ACC-R3-06",
+      "name": "请求体携带 builtIn=0 篡改被忽略（DTO 不暴露该字段，Jackson 忽略）",
+      "category": "EXCEPTION",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/2",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "builtIn": 0,
+        "name": "配置员"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-R1-02",
+      "name": "角色列表含新建自定义角色（builtIn=0 非内置）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/roles",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "sizeGte",
+          "value": 6
+        },
+        {
+          "path": "data",
+          "op": "contains",
+          "value": "\"code\":\"ACC_ROLE_${TS}\""
+        },
+        {
+          "path": "data",
+          "op": "contains",
+          "value": "\"builtIn\":0"
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-PERM-01",
+      "name": "创建绑定自定义角色的账号（权限即时生效验证准备）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "acctperm${TS}",
+        "password": "Init@12345",
+        "roleIds": [
+          "${accRoleId}"
+        ]
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "extract": {
+        "permUserId": "data.id",
+        "permUserName": "data.username"
+      }
+    },
+    {
+      "id": "A-ACC-PERM-02",
+      "name": "该账号登录后权限为 [46,49]（仅改 name 未提交 permissionIds 权限保持）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/auth/login",
+      "json": {
+        "username": "${permUserName}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.roles[0]",
+          "op": "eq",
+          "value": "ACC_ROLE_${TS}"
+        },
+        {
+          "path": "data.permissions",
+          "op": "contains",
+          "value": "account:user:read"
+        },
+        {
+          "path": "data.permissions",
+          "op": "contains",
+          "value": "account:role:read"
+        }
+      ],
+      "extract": {
+        "permToken": "data.token"
+      }
+    },
+    {
+      "id": "A-ACC-PERM-03",
+      "name": "角色追加 account:user:write 权限（R3 权限全量覆盖 [46,49,47]）",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/${accRoleId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "permissionIds": [
+          46,
+          49,
+          47
+        ]
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-PERM-04",
+      "name": "在线账号不换 Token 调 U2 成功（权限增加下一次请求即生效）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${permToken}"
+      },
+      "json": {
+        "username": "permt${TS}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "extract": {
+        "permCreateId": "data.id"
+      }
+    },
+    {
+      "id": "A-ACC-PERM-05",
+      "name": "角色移除 account:user:write 权限（恢复 [46,49]，场景③）",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/${accRoleId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "permissionIds": [
+          46,
+          49
+        ]
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-PERM-06",
+      "name": "在线账号不换 Token 再调 U2 被拒 403（权限移除即时生效，无需重登录）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${permToken}"
+      },
+      "json": {
+        "username": "permt2${TS}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "A-ACC-PERM-07",
+      "name": "清理：删除权限验证中间创建的用户",
+      "category": "NORMAL",
+      "method": "DELETE",
+      "path": "/api/admin/account/users/${permCreateId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-PERM-08",
+      "name": "清理：删除权限验证账号 acctperm",
+      "category": "NORMAL",
+      "method": "DELETE",
+      "path": "/api/admin/account/users/${permUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-P1-01",
+      "name": "权限点全量查询（59 项，按 sort 升序，首尾字段断言）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/permissions",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "sizeEq",
+          "value": 59
+        },
+        {
+          "path": "data[0].id",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data[0].code",
+          "op": "eq",
+          "value": "device:type:read"
+        },
+        {
+          "path": "data[0].module",
+          "op": "eq",
+          "value": "device"
+        },
+        {
+          "path": "data[0].action",
+          "op": "eq",
+          "value": "read"
+        },
+        {
+          "path": "data[45].code",
+          "op": "eq",
+          "value": "account:user:read"
+        },
+        {
+          "path": "data[58].id",
+          "op": "eq",
+          "value": 59
+        },
+        {
+          "path": "data[58].code",
+          "op": "eq",
+          "value": "knowledge:search:read"
+        },
+        {
+          "path": "data[58].endType",
+          "op": "eq",
+          "value": "user"
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-P1-02",
+      "name": "权限点只读：POST /account/permissions 返回 405（无写路由）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/account/permissions",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "code": "hack:perm"
+      },
+      "expectHttp": 405
+    },
+    {
+      "id": "A-ACC-S1-01",
+      "name": "新建角色查询数据范围返回空数组（data: [] 非 null）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/roles/${accRoleId}/data-scopes",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "sizeEq",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-S1-02",
+      "name": "查询不存在角色的数据范围返回 404（COMMON_4004 角色不存在）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/account/roles/999999/data-scopes",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 404,
+      "expectCode": 404,
+      "expectErrorCode": "COMMON_4004",
+      "expectMessageContains": "角色不存在"
+    },
+    {
+      "id": "A-ACC-S2-01",
+      "name": "保存数据范围 DEVICE_TYPE + scopeId=1 成功",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/${accRoleId}/data-scopes",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "scopeType": "DEVICE_TYPE",
+        "scopeId": 1,
+        "remark": "验收范围"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-S2-02",
+      "name": "S1 回显恰 1 条（DEVICE_TYPE/1）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/roles/${accRoleId}/data-scopes",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "sizeEq",
+          "value": 1
+        },
+        {
+          "path": "data[0].scopeType",
+          "op": "eq",
+          "value": "DEVICE_TYPE"
+        },
+        {
+          "path": "data[0].scopeId",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "path": "data[0].roleId",
+          "op": "eq",
+          "value": "${accRoleId}"
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-S2-03",
+      "name": "覆盖保存 KNOWLEDGE_BASE + scopeId=2（场景⑤）",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/${accRoleId}/data-scopes",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "scopeType": "KNOWLEDGE_BASE",
+        "scopeId": 2
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-S2-04",
+      "name": "覆盖后 S1 仍仅返回 1 条且为新值（单一生效范围）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/roles/${accRoleId}/data-scopes",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "sizeEq",
+          "value": 1
+        },
+        {
+          "path": "data[0].scopeType",
+          "op": "eq",
+          "value": "KNOWLEDGE_BASE"
+        },
+        {
+          "path": "data[0].scopeId",
+          "op": "eq",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-S2-05",
+      "name": "保存 ALL 携带 scopeId=99（应按 0 存储）",
+      "category": "BOUNDARY",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/${accRoleId}/data-scopes",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "scopeType": "ALL",
+        "scopeId": 99
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-S2-06",
+      "name": "ALL 回显 scopeId=0（非 ALL 类型范围对象约定）",
+      "category": "BOUNDARY",
+      "method": "GET",
+      "path": "/api/admin/account/roles/${accRoleId}/data-scopes",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data",
+          "op": "sizeEq",
+          "value": 1
+        },
+        {
+          "path": "data[0].scopeType",
+          "op": "eq",
+          "value": "ALL"
+        },
+        {
+          "path": "data[0].scopeId",
+          "op": "eq",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-S2-07",
+      "name": "DEVICE 未提供 scopeId 返回 400（请指定范围对象）",
+      "category": "EXCEPTION",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/${accRoleId}/data-scopes",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "scopeType": "DEVICE"
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "请指定范围对象"
+    },
+    {
+      "id": "A-ACC-S2-08",
+      "name": "旧值 scopeType=LINE 返回 400（@Pattern 中文报文，场景⑥）",
+      "category": "EXCEPTION",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/${accRoleId}/data-scopes",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "scopeType": "LINE",
+        "scopeId": 1
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "范围类型非法，允许值：ALL/DEVICE_TYPE/DEVICE/KNOWLEDGE_BASE"
+    },
+    {
+      "id": "A-ACC-S2-09",
+      "name": "旧值 scopeType=KB 返回 400（同上，前端枚举修正前引导提示）",
+      "category": "EXCEPTION",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/${accRoleId}/data-scopes",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "scopeType": "KB",
+        "scopeId": 1
+      },
+      "expectHttp": 400,
+      "expectCode": 400,
+      "expectErrorCode": "COMMON_4100",
+      "expectMessageContains": "范围类型非法，允许值：ALL/DEVICE_TYPE/DEVICE/KNOWLEDGE_BASE"
+    },
+    {
+      "id": "A-ACC-TOK-01",
+      "name": "创建持 REVIEWER 角色账号（令牌即时失效验证准备）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "acctstop${TS}",
+        "password": "Init@12345",
+        "roleIds": [
+          5
+        ]
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "extract": {
+        "stopUserId": "data.id",
+        "stopUserName": "data.username"
+      }
+    },
+    {
+      "id": "A-ACC-TOK-02",
+      "name": "该账号登录管理端获取 Token（REVIEWER 双端角色）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/auth/login",
+      "json": {
+        "username": "${stopUserName}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.roles[0]",
+          "op": "eq",
+          "value": "REVIEWER"
+        }
+      ],
+      "extract": {
+        "stopToken": "data.token"
+      }
+    },
+    {
+      "id": "A-ACC-TOK-03",
+      "name": "停用该账号（U3 status=0，场景④）",
+      "category": "NORMAL",
+      "method": "PUT",
+      "path": "/api/admin/account/users/${stopUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "status": 0
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-TOK-04",
+      "name": "停用后原 Token 请求被拒 401（令牌即时失效-停用路径）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${stopToken}"
+      },
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001",
+      "expectMessageContains": "未登录或登录已过期"
+    },
+    {
+      "id": "A-ACC-TOK-05",
+      "name": "停用账号登录被拒 401（存量登录校验 status）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/auth/login",
+      "json": {
+        "username": "${stopUserName}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001",
+      "expectMessageContains": "用户名或密码错误"
+    },
+    {
+      "id": "A-ACC-TOK-06",
+      "name": "删除该账号（逻辑删除，令牌失效删除路径准备）",
+      "category": "NORMAL",
+      "method": "DELETE",
+      "path": "/api/admin/account/users/${stopUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-TOK-07",
+      "name": "删除后原 Token 请求仍被拒 401（令牌即时失效-删除路径）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${stopToken}"
+      },
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001",
+      "expectMessageContains": "未登录或登录已过期"
+    },
+    {
+      "id": "A-ACC-ENG-01",
+      "name": "创建绑定 ENGINEER 角色账号（场景②端隔离验证准备，供 15 跨端套件）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "accteng${TS}",
+        "password": "Init@12345",
+        "nickname": "端隔离账号${TS}",
+        "roleIds": [
+          3
+        ]
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "extract": {
+        "engAccId": "data.id",
+        "engAccName": "data.username"
+      }
+    },
+    {
+      "id": "A-ACC-AUTH-01",
+      "name": "无 Token 访问用户列表返回 401（COMMON_4001 中文报文）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001",
+      "expectMessageContains": "未登录或登录已过期"
+    },
+    {
+      "id": "A-ACC-AUTH-02",
+      "name": "config1 无 account:user:read 查询用户列表被拒（403）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${configToken}"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "A-ACC-AUTH-03",
+      "name": "review1 持 account:user:read 正常查询（分级权限反向验证）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${revToken}"
+      },
+      "query": {
+        "size": 3
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.size",
+          "op": "eq",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-AUTH-04",
+      "name": "review1 无 account:user:write 创建用户被拒（403）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${revToken}"
+      },
+      "json": {
+        "username": "revcreate${TS}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "A-ACC-AUTH-05",
+      "name": "无 Token 创建用户返回 401（写接口）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "json": {
+        "username": "notoken${TS}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 401,
+      "expectCode": 401,
+      "expectErrorCode": "COMMON_4001",
+      "expectMessageContains": "未登录或登录已过期"
+    },
+    {
+      "id": "A-ACC-AUTH-06",
+      "name": "config1 无 account:role:write 更新角色被拒（403）",
+      "category": "EXCEPTION",
+      "method": "PUT",
+      "path": "/api/admin/account/roles/2",
+      "headers": {
+        "Authorization": "Bearer ${configToken}"
+      },
+      "json": {
+        "name": "配置员"
+      },
+      "expectHttp": 403,
+      "expectCode": 403,
+      "expectErrorCode": "COMMON_4003"
+    },
+    {
+      "id": "A-ACC-AUD-01",
+      "name": "创建审计验证账号（成功操作，应落 module=account result=1 审计）",
+      "category": "NORMAL",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "acctaud${TS}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "extract": {
+        "audUserId": "data.id"
+      }
+    },
+    {
+      "id": "A-ACC-AUD-02",
+      "name": "审计完整性：最新 create/user 审计记录 result=1（module=account）",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "module": "account",
+        "action": "create",
+        "operatorName": "admin",
+        "size": 1
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.total",
+          "op": "gte",
+          "value": 1
+        },
+        {
+          "path": "data.records[0].module",
+          "op": "eq",
+          "value": "account"
+        },
+        {
+          "path": "data.records[0].action",
+          "op": "eq",
+          "value": "create"
+        },
+        {
+          "path": "data.records[0].targetType",
+          "op": "eq",
+          "value": "user"
+        },
+        {
+          "path": "data.records[0].result",
+          "op": "eq",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-AUD-03",
+      "name": "触发失败创建（409 重复用户名，应落 result=0 审计）",
+      "category": "EXCEPTION",
+      "method": "POST",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "json": {
+        "username": "acctaud${TS}",
+        "password": "Init@12345"
+      },
+      "expectHttp": 409,
+      "expectCode": 409,
+      "expectErrorCode": "COMMON_4009",
+      "expectMessageContains": "用户名已存在"
+    },
+    {
+      "id": "A-ACC-AUD-04",
+      "name": "审计完整性：失败操作最新审计记录 result=0 且 errorMsg 含失败原因",
+      "category": "NORMAL",
+      "method": "GET",
+      "path": "/api/admin/audit/logs",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "query": {
+        "module": "account",
+        "action": "create",
+        "operatorName": "admin",
+        "size": 1
+      },
+      "expectHttp": 200,
+      "expectCode": 0,
+      "asserts": [
+        {
+          "path": "data.records[0].result",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "path": "data.records[0].errorMsg",
+          "op": "contains",
+          "value": "用户名已存在"
+        }
+      ]
+    },
+    {
+      "id": "A-ACC-AUD-05",
+      "name": "清理：删除审计验证账号",
+      "category": "NORMAL",
+      "method": "DELETE",
+      "path": "/api/admin/account/users/${audUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
+    },
+    {
+      "id": "A-ACC-CLN-01",
+      "name": "清理：删除无角色验证账号 acctnr（测试数据归零）",
+      "category": "NORMAL",
+      "method": "DELETE",
+      "path": "/api/admin/account/users/${nrUserId}",
+      "headers": {
+        "Authorization": "Bearer ${adminToken}"
+      },
+      "expectHttp": 200,
+      "expectCode": 0
     }
   ]
 }

@@ -363,6 +363,7 @@ def active_codes_of(state: dict) -> list[str]:
     if not configs:
         return list(AGENT_ORDER)
     configured = set(configs.keys())
+    configured.add("monitor")
     return [code for code in AGENT_ORDER if code in configured]
 
 

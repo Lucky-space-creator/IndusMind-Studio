@@ -569,12 +569,12 @@ class TestInitialState(unittest.TestCase):
         state = initial_state(request, "t")
         self.assertEqual(state["active_codes"], ["monitor", "work_order"])
 
-    def test_active_codes_empty_when_only_unknown(self):
-        """仅未知 code → active_codes 为空列表（非全量）。"""
+    def test_active_codes_monitor_only_when_unknown(self):
+        """仅未知 code → 过滤后仅剩强制激活的 monitor（固定首节点）。"""
         request = DiagnosisRunRequest(agents=[{"agentCode": "foo"}])
-        self.assertEqual(active_codes_of({"configs": {"foo": request.agents[0]}}), [])
+        self.assertEqual(active_codes_of({"configs": {"foo": request.agents[0]}}), ["monitor"])
         state = initial_state(request, "t")
-        self.assertEqual(state["active_codes"], [])
+        self.assertEqual(state["active_codes"], ["monitor"])
 
 
 _CANNED_OUTPUTS = {
@@ -641,17 +641,18 @@ class TestInvokeSequential(unittest.TestCase):
         self.assertEqual(called, ["monitor"])
         self.assertIn("设备状态正常", result["conclusion"])
 
-    def test_sequential_empty_active_codes(self):
-        """active_codes 为空 → 无领域节点执行，仅内部节点收尾。"""
+    def test_sequential_unknown_only_runs_monitor(self):
+        """仅未知 code → monitor 仍以默认配置执行，其余领域节点不执行。"""
         result, called = self._run(["unknown_agent"])
-        self.assertEqual(called, [])
-        self.assertEqual(result["steps"], [])
-        self.assertEqual(result["conclusion"], "诊断完成。")
+        self.assertEqual(called, ["monitor"])
+        self.assertEqual([s["agentCode"] for s in result["steps"]], ["monitor"])
+        self.assertEqual(result["conclusion"], "监测异常。")
+        self.assertEqual(result["risk_level"], "high")
 
-    def test_sequential_without_monitor_runs_downstream(self):
-        """无 monitor → root_cause 起步，后续正常。"""
+    def test_sequential_monitor_runs_even_unconfigured(self):
+        """未配置 monitor → monitor 仍强制执行，后续节点正常。"""
         result, called = self._run(["root_cause", "spare_cost", "safety", "work_order"])
-        self.assertEqual(called, ["root_cause", "spare_cost", "safety", "work_order"])
+        self.assertEqual(called, list(AGENT_ORDER))
         self.assertEqual(result["risk_level"], "high")
 
     def test_sequential_root_cause_missing_parallel_still_runs(self):

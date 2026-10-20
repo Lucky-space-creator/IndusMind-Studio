@@ -1586,6 +1586,28 @@
         "Authorization": "Bearer ${engToken}"
       },
       "expectHttp": 404
+    },
+    {
+      "id": "U-ACC-01",
+      "name": "用户端实例访问管理端账号用户接口返回 404（end-type=user 条件装配不注册路由）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/account/users",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 404
+    },
+    {
+      "id": "U-ACC-02",
+      "name": "用户端实例访问管理端账号角色接口返回 404（路由隔离防越权）",
+      "category": "EXCEPTION",
+      "method": "GET",
+      "path": "/api/admin/account/roles",
+      "headers": {
+        "Authorization": "Bearer ${engToken}"
+      },
+      "expectHttp": 404
     }
   ]
 }
