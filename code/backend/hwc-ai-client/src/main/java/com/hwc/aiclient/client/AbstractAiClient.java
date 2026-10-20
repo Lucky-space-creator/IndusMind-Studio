@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
@@ -30,8 +31,12 @@ public abstract class AbstractAiClient {
 
     protected AbstractAiClient(RestClient.Builder builder, AiServiceProperties properties,
                                ObjectMapper objectMapper, String moduleName) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(properties.getConnectTimeoutMs());
+        requestFactory.setReadTimeout(properties.getReadTimeoutMs());
         this.restClient = builder
                 .baseUrl(properties.getBaseUrl())
+                .requestFactory(requestFactory)
                 .build();
         this.objectMapper = objectMapper;
         this.moduleName = moduleName;

@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from typing import Iterator, Sequence
 
 from app.core.config import settings
-from app.core.errors import vector_unavailable
+from app.core.errors import AiServiceError, vector_unavailable
 from app.core.logging import get_logger
 from app.core.text import to_tsvector_text
 
@@ -28,7 +28,7 @@ def _connect() -> Iterator:
     try:
         yield conn
         conn.commit()
-    except vector_unavailable:
+    except AiServiceError:
         conn.rollback()
         raise
     except Exception as exc:
