@@ -9,6 +9,7 @@ node_modules/
 dist/
 .pnpm-store/
 *.tsbuildinfo
+.vite/
 
 # IDE
 .idea/
