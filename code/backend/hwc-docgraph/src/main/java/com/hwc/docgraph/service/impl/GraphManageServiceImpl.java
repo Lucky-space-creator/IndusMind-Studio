@@ -1,6 +1,7 @@
 package com.hwc.docgraph.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hwc.aiclient.client.DocGraphClient;
 import com.hwc.aiclient.model.GraphExtractRequest;
 import com.hwc.aiclient.model.GraphSyncRequest;
@@ -33,6 +34,7 @@ public class GraphManageServiceImpl implements GraphManageService {
     private final KbGraphEdgeMapper edgeMapper;
     private final KnowledgeQueryFacade knowledgeQueryFacade;
     private final DocGraphClient docGraphClient;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -152,20 +154,53 @@ public class GraphManageServiceImpl implements GraphManageService {
         node.setNodeType("segment");
         node.setRefId(segment.getId());
         node.setTitle(resolveTitle(segment));
-        node.setExtra(segment.getChapter() == null ? null : "{\"chapter\":\"" + segment.getChapter() + "\"}");
+        node.setExtra(buildChapterExtra(segment.getChapter()));
         nodeMapper.insert(node);
+    }
+
+    private String buildChapterExtra(String chapter) {
+        if (chapter == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(java.util.Map.of("chapter", sanitize(chapter)));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String sanitize(String value) {
+        if (value == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (Character.isHighSurrogate(c)) {
+                if (i + 1 < value.length() && Character.isLowSurrogate(value.charAt(i + 1))) {
+                    sb.append(c).append(value.charAt(i + 1));
+                    i++;
+                }
+            } else if (Character.isLowSurrogate(c)) {
+                continue;
+            } else if (c >= 0x20 || c == '\t' || c == '\n' || c == '\r') {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     private String resolveTitle(KbSegment segment) {
         String chapter = segment.getChapter();
         String content = segment.getContent();
         if (chapter != null && !chapter.isBlank()) {
-            return chapter;
+            return sanitize(chapter);
         }
         if (content == null) {
             return "片段-" + segment.getSeqNo();
         }
-        return content.length() > 50 ? content.substring(0, 50) : content;
+        String cleaned = sanitize(content);
+        return cleaned.length() > 50 ? cleaned.substring(0, 50) : cleaned;
     }
 
     private KbGraphNode findNode(String nodeType, Long refId) {

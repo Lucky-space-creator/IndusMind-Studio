@@ -36,23 +36,23 @@ public class TextSegmenter {
         }
 
         if (bounds.isEmpty()) {
-            segments.addAll(splitBySize(normalized, null));
+            segments.addAll(splitBySize(normalized, null, 1));
             return segments;
         }
         if (bounds.get(0).start() > 0) {
             String preamble = normalized.substring(0, bounds.get(0).start()).trim();
-            segments.addAll(splitBySize(preamble, null));
+            segments.addAll(splitBySize(preamble, null, 1));
         }
         for (int i = 0; i < bounds.size(); i++) {
             ChapterBound bound = bounds.get(i);
             int end = i + 1 < bounds.size() ? bounds.get(i + 1).start() : normalized.length();
             String chapterText = normalized.substring(bound.start(), end).trim();
-            segments.addAll(splitBySize(chapterText, bound.chapter()));
+            segments.addAll(splitBySize(chapterText, bound.chapter(), segments.size() + 1));
         }
         return segments;
     }
 
-    private List<Segment> splitBySize(String text, String chapter) {
+    private List<Segment> splitBySize(String text, String chapter, int startSeq) {
         List<Segment> segments = new ArrayList<>();
         if (text == null || text.isBlank()) {
             return segments;
@@ -71,7 +71,7 @@ public class TextSegmenter {
             }
             String content = text.substring(start, end).trim();
             if (!content.isEmpty()) {
-                segments.add(new Segment(segments.size() + 1, content, chapter, content.length()));
+                segments.add(new Segment(startSeq + segments.size(), content, chapter, content.length()));
             }
             if (end >= text.length()) {
                 break;
