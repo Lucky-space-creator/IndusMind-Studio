@@ -13,6 +13,9 @@ log = get_logger(__name__)
 
 _CANONICAL = {"REF", "REPLACE", "SUPPLEMENT", "PRECEDE", "SAME_DEVICE", "SAME_FAULT"}
 
+_BATCH_CHARS = 6000
+_SEG_CONTENT_CHARS = 400
+
 _SYSTEM_PROMPT = (
     "你是工业设备知识文档的关联分析助手。仅识别文档片段之间的关系，"
     "绝不涉及设备、备件、工单等实体。"
@@ -101,24 +104,57 @@ def _heuristic_edges(segments: list[dict]) -> list[CandidateEdge]:
     return edges
 
 
-def extract_candidates(kb_id: int, segments: list[dict]) -> list[CandidateEdge]:
-    if len(segments) < 2:
-        return []
+def _extract_batch(segments: list[dict]) -> list[CandidateEdge]:
     valid_ids = {int(seg["segmentId"]) for seg in segments}
     catalog = "\n".join(
-        f"[{seg['segmentId']}] {seg.get('chapter') or ''} {seg.get('content') or ''}" for seg in segments
+        f"[{seg['segmentId']}] {seg.get('chapter') or ''} {(seg.get('content') or '')[:_SEG_CONTENT_CHARS]}"
+        for seg in segments
     )
     messages = [
         {"role": "system", "content": _SYSTEM_PROMPT},
         {"role": "user", "content": f"片段集合：\n{catalog}\n\n请输出候选关系 JSON 数组。"},
     ]
-    try:
-        text = get_llm().chat(messages, temperature=0.0)
-        raw_edges = _parse_json_array(text)
-        edges = [edge for edge in (_to_edge(item, valid_ids) for item in raw_edges) if edge]
-        if edges:
-            return edges
-        log.info("LLM 未产出有效候选边，使用启发式 kb=%s", kb_id)
-    except Exception as exc:
-        log.warning("候选边抽取 LLM 调用失败，使用启发式：%s", exc)
+    text = get_llm().chat(messages, temperature=0.0)
+    raw_edges = _parse_json_array(text)
+    return [edge for edge in (_to_edge(item, valid_ids) for item in raw_edges) if edge]
+
+
+def _batches(segments: list[dict]) -> list[list[dict]]:
+    batches: list[list[dict]] = []
+    current: list[dict] = []
+    size = 0
+    for seg in segments:
+        length = len(seg.get("content") or "") + len(seg.get("chapter") or "")
+        if current and size + length > _BATCH_CHARS:
+            batches.append(current)
+            current = []
+            size = 0
+        current.append(seg)
+        size += length
+    if current:
+        batches.append(current)
+    return batches
+
+
+def extract_candidates(kb_id: int, segments: list[dict]) -> list[CandidateEdge]:
+    if len(segments) < 2:
+        return []
+    edges: list[CandidateEdge] = []
+    seen: set[tuple[int, int, str]] = set()
+    llm_failed = False
+    for index, batch in enumerate(_batches(segments)):
+        if len(batch) < 2:
+            continue
+        try:
+            for edge in _extract_batch(batch):
+                key = (edge.from_ref_id, edge.to_ref_id, edge.relation_type)
+                if key not in seen:
+                    seen.add(key)
+                    edges.append(edge)
+        except Exception as exc:
+            llm_failed = True
+            log.warning("候选边抽取 LLM 调用失败（批 %s）：%s", index, exc)
+    if edges:
+        return edges
+    log.info("LLM 未产出有效候选边，使用启发式 kb=%s failed=%s", kb_id, llm_failed)
     return _heuristic_edges(segments)

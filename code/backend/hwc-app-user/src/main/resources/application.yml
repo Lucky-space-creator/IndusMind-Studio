@@ -43,7 +43,7 @@ hwc:
   ai:
     base-url: ${AI_SERVICE_BASE_URL:http://localhost:8100}
     connect-timeout-ms: 5000
-    read-timeout-ms: 120000
+    read-timeout-ms: 600000
     retry-count: 1
   minio:
     endpoint: http://${MINIO_HOST:localhost}:${MINIO_API_PORT:9000}
