@@ -51,14 +51,19 @@ def ensure_node(cur, kb_id, node_type, ref_id, title, extra):
 
 def main():
     kb_id = int(sys.argv[1])
+    start = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+    limit = int(sys.argv[3]) if len(sys.argv) > 3 else 0
     conn = pymysql.connect(**DB)
     cur = conn.cursor()
     cur.execute("SELECT id, doc_name FROM kb_document WHERE kb_id=%s AND deleted=0 ORDER BY id", (kb_id,))
-    docs = cur.fetchall()
-    print(f"kb{kb_id}: {len(docs)} docs", flush=True)
+    all_docs = cur.fetchall()
+    docs = all_docs[start - 1:]
+    if limit > 0:
+        docs = docs[:limit]
+    print(f"kb{kb_id}: total {len(all_docs)} docs, from #{start}, this run {len(docs)}", flush=True)
     total_edges = 0
     t0 = time.time()
-    for i, (doc_id, doc_name) in enumerate(docs, 1):
+    for i, (doc_id, doc_name) in enumerate(docs, start):
         ensure_node(cur, kb_id, "document", doc_id, sanitize(doc_name)[:255], None)
         cur.execute(
             "SELECT id,doc_id,chapter,content,seq_no FROM kb_segment WHERE doc_id=%s ORDER BY seq_no LIMIT %s",
@@ -66,7 +71,7 @@ def main():
         )
         segs = cur.fetchall()
         if len(segs) < 2:
-            print(f"  [{i}/{len(docs)}] skip doc{doc_id} (segs={len(segs)})", flush=True)
+            print(f"  [{i}/{len(all_docs)}] skip doc{doc_id} (segs={len(segs)})", flush=True)
             continue
         node_map = {}
         payload = []
@@ -79,7 +84,7 @@ def main():
             r = requests.post(AI_URL, json={"kbId": kb_id, "segments": payload}, timeout=1800)
             edges = (r.json() or {}).get("data") or []
         except Exception as exc:
-            print(f"  [{i}/{len(docs)}] ERR doc{doc_id}: {type(exc).__name__} {str(exc)[:120]}", flush=True)
+            print(f"  [{i}/{len(all_docs)}] ERR doc{doc_id}: {type(exc).__name__} {str(exc)[:120]}", flush=True)
             continue
         added = 0
         for e in edges:
@@ -102,8 +107,8 @@ def main():
             added += 1
         conn.commit()
         total_edges += added
-        print(f"  [{i}/{len(docs)}] doc{doc_id} segs={len(segs)} edges+{added} total={total_edges} {round(time.time()-t0)}s", flush=True)
-    print(f"kb{kb_id} DONE edges={total_edges} elapsed={round((time.time()-t0)/60,1)}min", flush=True)
+        print(f"  [{i}/{len(all_docs)}] doc{doc_id} segs={len(segs)} edges+{added} total={total_edges} {round(time.time()-t0)}s", flush=True)
+    print(f"kb{kb_id} DONE(#<= {start + len(docs) - 1}) edges+{total_edges} elapsed={round((time.time()-t0)/60,1)}min", flush=True)
     conn.close()
 
 

@@ -13,8 +13,8 @@ log = get_logger(__name__)
 
 _CANONICAL = {"REF", "REPLACE", "SUPPLEMENT", "PRECEDE", "SAME_DEVICE", "SAME_FAULT"}
 
-_BATCH_CHARS = 6000
-_SEG_CONTENT_CHARS = 400
+_BATCH_CHARS = 3000
+_SEG_CONTENT_CHARS = 300
 
 _SYSTEM_PROMPT = (
     "你是工业设备知识文档的关联分析助手。仅识别文档片段之间的关系，"
