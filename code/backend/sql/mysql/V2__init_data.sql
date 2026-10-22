@@ -175,14 +175,14 @@ INSERT INTO `agent_tool_binding` (`agent_id`, `kb_ids`, `match_strictness`, `too
 -- ---------------------------------------------------------------------
 INSERT INTO `agent_flow` (`id`, `code`, `name`, `version`, `status`, `is_preset`, `description`, `creator`) VALUES
 (1, 'default_diagnosis', '默认协同诊断流程', 1, 'published', 1,
- '监测→（正常则结束）→根因诊断→（并行）备件成本+安全核查→（安全通过且成本完成）→工单编排', 'system');
+ '监测→（正常则结束）→根因诊断→（并行）备件成本+安全核查→（安全通过）→工单编排', 'system');
 
 INSERT INTO `agent_flow_node` (`flow_id`, `node_order`, `node_name`, `agent_id`, `trigger_condition`, `timeout_seconds`, `creator`) VALUES
 (1, 1, '异常确认与分级', 1, NULL, 120, 'system'),
 (1, 2, '根因诊断',       2, '{"expr":"monitor.deviceStatus != ''normal''"}', 180, 'system'),
-(1, 3, '备件成本核算',   3, '{"expr":"root_cause.completed == true"}', 120, 'system'),
-(1, 4, '安全规范核查',   4, '{"expr":"root_cause.completed == true"}', 120, 'system'),
-(1, 5, '工单编排',       5, '{"expr":"safety.checkResult == ''passed'' && spare_cost.completed == true"}', 120, 'system');
+(1, 3, '备件成本核算',   3, '{"expr":"root_cause.topCause != ''''"}', 120, 'system'),
+(1, 4, '安全规范核查',   4, '{"expr":"root_cause.topCause != ''''"}', 120, 'system'),
+(1, 5, '工单编排',       5, '{"expr":"safety.checkResult == ''pass''"}', 120, 'system');
 
 -- ---------------------------------------------------------------------
 -- 7. 全局健康评分规则（REQ-M09-02）
