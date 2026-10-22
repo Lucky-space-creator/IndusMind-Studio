@@ -12,7 +12,7 @@ export const pageEdges = (params: {
 
 export const listNodes = (params?: { kbId?: number; nodeType?: string; keyword?: string }) =>
   api
-    .get<PageResult<KbGraphNode>>("/api/admin/docgraph/nodes", { ...params, current: 1, size: 200 })
+    .get<PageResult<KbGraphNode>>("/api/admin/docgraph/nodes", { ...params, current: 1, size: 500 })
     .then((r) => r?.records ?? []);
 
 export const createEdge = (body: Partial<KbGraphEdge>) => api.post<KbGraphEdge>("/api/admin/docgraph/edges", body);
