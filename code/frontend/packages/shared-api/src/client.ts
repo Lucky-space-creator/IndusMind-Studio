@@ -58,8 +58,18 @@ function buildQuery(query: RequestOptions["query"]): string {
   return s ? `?${s}` : "";
 }
 
-async function parseResponse<T>(resp: Response): Promise<T> {
+async function parseResponse<T>(resp: Response, hasAuth: boolean): Promise<T> {
   if (resp.status === 401) {
+    if (!hasAuth) {
+      let payloadMessage = "认证失败";
+      try {
+        const payload = (await resp.json()) as ApiResponse<T>;
+        payloadMessage = payload.message || payloadMessage;
+      } catch {
+        /* 响应体非 JSON 时使用默认文案 */
+      }
+      throw new ApiError(401, payloadMessage, undefined, 401);
+    }
     unauthorizedHandler();
     throw new ApiError(401, "登录已过期，请重新登录", undefined, 401);
   }
@@ -107,7 +117,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     errorMessageHandler(message);
     throw new ApiError(-1, message);
   }
-  return parseResponse<T>(resp);
+  return parseResponse<T>(resp, Boolean(token));
 }
 
 /** 文件上传（multipart/form-data，自动注入 Token） */
@@ -134,7 +144,7 @@ export async function uploadFile<T>(
     errorMessageHandler(message);
     throw new ApiError(-1, message);
   }
-  return parseResponse<T>(resp);
+  return parseResponse<T>(resp, Boolean(token));
 }
 
 /** 文件下载（带 Token，返回 Blob；用于工单 PDF 导出等） */

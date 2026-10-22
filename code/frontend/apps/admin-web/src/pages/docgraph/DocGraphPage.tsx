@@ -12,7 +12,23 @@ import type { KbGraphEdge, KbGraphNode } from "@hwc/shared-types";
 import * as graphApi from "../../api/docgraph";
 import * as kbApi from "../../api/knowledge";
 
-const RELATIONS = ["引用", "替代", "补充", "前置", "同设备", "同故障"];
+const RELATION_OPTIONS = [
+  { value: "REF", label: "引用" },
+  { value: "REPLACE", label: "替代" },
+  { value: "SUPPLEMENT", label: "补充" },
+  { value: "PRECEDE", label: "前置" },
+  { value: "SAME_DEVICE", label: "同设备" },
+  { value: "SAME_FAULT", label: "同故障" },
+];
+const RELATION_LABEL: Record<string, string> = Object.fromEntries(
+  RELATION_OPTIONS.map((r) => [r.value, r.label]),
+);
+const NODE_TYPE_LABEL: Record<string, string> = {
+  document: "文档",
+  doc: "文档",
+  section: "章节",
+  segment: "片段",
+};
 
 /** 文档关联区：左节点树 + 中关联图（ECharts）+ 右关系边管理（自动/人工区分） */
 export default function DocGraphPage() {
@@ -64,6 +80,23 @@ export default function DocGraphPage() {
       chart.current = echarts.init(chartRef.current);
     }
     const list = edges?.records ?? [];
+    const edgeNodeIds = new Set<string>();
+    list.forEach((e) => {
+      edgeNodeIds.add(String(e.fromNodeId));
+      edgeNodeIds.add(String(e.toNodeId));
+    });
+    const visibleNodes = (nodes ?? []).filter((n) => edgeNodeIds.has(String(n.id)));
+    const virtualNodes = [...edgeNodeIds]
+      .filter((id) => !visibleNodes.some((n) => String(n.id) === id))
+      .map((id) => ({
+        id,
+        name: `节点 ${id}`,
+        nodeType: "segment",
+        refId: Number(id),
+        title: `节点 ${id}`,
+      }));
+    const renderNodes = [...visibleNodes.slice(0, 40), ...virtualNodes];
+    const nodeTypeOf = (t: string) => (t === "doc" ? "document" : t);
     chart.current.setOption({
       tooltip: { formatter: (p: { data?: { name?: string; relation?: string } }) => p.data?.name ?? "" },
       series: [
@@ -75,29 +108,29 @@ export default function DocGraphPage() {
           force: { repulsion: 220, edgeLength: 90 },
           label: { show: true, fontSize: 10, color: "#1E293B", width: 90, overflow: "truncate" },
           edgeLabel: { show: true, fontSize: 9, color: "#64748B", formatter: (p: { data?: { relation?: string } }) => p.data?.relation ?? "" },
-          data: (nodes ?? []).slice(0, 60).map((n) => ({
+          data: renderNodes.map((n) => ({
             id: String(n.id),
             name: n.title,
-            symbolSize: n.nodeType === "doc" ? 40 : n.nodeType === "section" ? 26 : 18,
-            itemStyle: { color: n.nodeType === "doc" ? "#0E6E8C" : n.nodeType === "section" ? "#1D4ED8" : "#94A3B8" },
+            symbolSize: nodeTypeOf(n.nodeType) === "document" ? 40 : nodeTypeOf(n.nodeType) === "section" ? 26 : 18,
+            itemStyle: {
+              color: nodeTypeOf(n.nodeType) === "document" ? "#0E6E8C" : nodeTypeOf(n.nodeType) === "section" ? "#1D4ED8" : "#94A3B8",
+            },
           })),
-          links: list
-            .filter((e) => nodeMap.has(e.fromNodeId) && nodeMap.has(e.toNodeId))
-            .map((e) => ({
-              source: String(e.fromNodeId),
-              target: String(e.toNodeId),
-              relation: e.relationType,
-              lineStyle: {
-                color: e.status === "confirmed" ? "#15803D" : e.status === "rejected" ? "#CBD5E1" : "#C2410C",
-                type: e.source === "manual" ? "solid" : "dashed",
-                width: e.status === "confirmed" ? 2 : 1,
-              },
-            })),
+          links: list.map((e) => ({
+            source: String(e.fromNodeId),
+            target: String(e.toNodeId),
+            relation: RELATION_LABEL[e.relationType] ?? e.relationType,
+            lineStyle: {
+              color: e.status === "confirmed" ? "#15803D" : e.status === "rejected" ? "#CBD5E1" : "#C2410C",
+              type: e.source === "manual" ? "solid" : "dashed",
+              width: e.status === "confirmed" ? 2 : 1,
+            },
+          })),
         },
       ],
     });
     return undefined as unknown as void;
-  }, [nodes, edges, nodeMap]);
+  }, [nodes, edges]);
 
   useEffect(() => {
     const onResize = () => chart.current?.resize();
@@ -162,15 +195,16 @@ export default function DocGraphPage() {
   });
 
   const treeData: DataNode[] = useMemo(() => {
-    const byType: Record<string, KbGraphNode[]> = { doc: [], section: [], segment: [] };
+    const byType: Record<string, KbGraphNode[]> = { document: [], section: [], segment: [] };
     (nodes ?? []).forEach((n) => {
-      (byType[n.nodeType] ??= []).push(n);
+      const type = n.nodeType === "doc" ? "document" : n.nodeType;
+      (byType[type] ??= []).push(n);
     });
     return [
       {
-        title: `文档节点（${byType.doc.length}）`,
-        key: "doc",
-        children: byType.doc.map((n) => ({ title: n.title, key: `n-${n.id}` })),
+        title: `文档节点（${byType.document.length}）`,
+        key: "document",
+        children: byType.document.map((n) => ({ title: n.title, key: `n-${n.id}` })),
       },
       {
         title: `章节节点（${byType.section.length}）`,
@@ -187,13 +221,14 @@ export default function DocGraphPage() {
 
   /** 关系边表单的节点下拉选项：按节点类型分组，label 显示节点名称 */
   const nodeSelectOptions = useMemo(() => {
-    const byType: Record<string, KbGraphNode[]> = { doc: [], section: [], segment: [] };
+    const byType: Record<string, KbGraphNode[]> = { document: [], section: [], segment: [] };
     (nodes ?? []).forEach((n) => {
-      (byType[n.nodeType] ??= []).push(n);
+      const type = n.nodeType === "doc" ? "document" : n.nodeType;
+      (byType[type] ??= []).push(n);
     });
     const toOpts = (list: KbGraphNode[]) => list.map((n) => ({ value: n.id, label: n.title }));
     return [
-      { label: `文档节点（${byType.doc.length}）`, options: toOpts(byType.doc) },
+      { label: `文档节点（${byType.document.length}）`, options: toOpts(byType.document) },
       { label: `章节节点（${byType.section.length}）`, options: toOpts(byType.section) },
       { label: `片段节点（${byType.segment.length}）`, options: toOpts(byType.segment) },
     ];
@@ -210,7 +245,7 @@ export default function DocGraphPage() {
       title: "关系",
       dataIndex: "relationType",
       width: 90,
-      render: (v) => <Tag color="cyan">{v}</Tag>,
+      render: (v) => <Tag color="cyan">{RELATION_LABEL[v] ?? v}</Tag>,
     },
     {
       title: "终点",
@@ -310,7 +345,7 @@ export default function DocGraphPage() {
             <Typography.Text type="secondary">选中节点</Typography.Text>
             <div style={{ marginTop: 4, fontWeight: 600 }}>{selectedNode.title}</div>
             <div style={{ color: "#64748B", marginTop: 2 }}>
-              类型 {selectedNode.nodeType} · refId {selectedNode.refId}
+              类型 {NODE_TYPE_LABEL[selectedNode.nodeType] ?? selectedNode.nodeType} · refId {selectedNode.refId}
             </div>
           </div>
         )}
@@ -349,7 +384,7 @@ export default function DocGraphPage() {
                 allowClear
                 placeholder="关系类型"
                 style={{ width: 120 }}
-                options={RELATIONS.map((r) => ({ value: r, label: r }))}
+                options={RELATION_OPTIONS}
                 value={relationFilter}
                 onChange={(v) => {
                   setRelationFilter(v);
@@ -448,7 +483,7 @@ export default function DocGraphPage() {
             />
           </Form.Item>
           <Form.Item name="relationType" label="关系类型" rules={[{ required: true, message: "请选择关系类型" }]}>
-            <Select options={RELATIONS.map((r) => ({ value: r, label: r }))} />
+            <Select options={RELATION_OPTIONS} />
           </Form.Item>
           <Form.Item name="confidence" label="置信度（0-1，人工边可为空）">
             <InputNumber style={{ width: "100%" }} min={0} max={1} step={0.1} />
