@@ -83,9 +83,10 @@ class SafetyNode(AgentNode):
                 riskLevel="medium",
                 reason="依据检索到的安全规程生成要求；未发现显式否决项。",
             )
+        # 无任何安全规程依据：按「安全优先」fail-closed，交人工确认，绝不默认放行
         return SafetyOutput(
-            checkResult="pass",
+            checkResult="fail",
             safetyRequirements=[],
-            riskLevel="medium",
-            reason="未检索到安全规程，缺少安全核查依据，建议人工补充安全要求。",
+            riskLevel="high",
+            reason="未检索到安全规程，缺少安全核查依据，已按保守策略否决工单生成，请人工补充安全要求后再执行。",
         )

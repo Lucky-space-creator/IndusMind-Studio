@@ -16,6 +16,8 @@ public class AgentStep extends AppendEntity {
 
     private Long agentId;
 
+    private String instanceKey;
+
     private String phase;
 
     private String summary;

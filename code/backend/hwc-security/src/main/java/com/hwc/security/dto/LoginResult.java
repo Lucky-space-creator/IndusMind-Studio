@@ -16,4 +16,7 @@ public class LoginResult {
     private String end;
     private List<String> roles;
     private List<String> permissions;
+
+    /** 权限点明细（含中文名称），供界面展示"当前账号拥有哪些权限" */
+    private List<PermissionItem> permissionDetails;
 }

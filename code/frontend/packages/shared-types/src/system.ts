@@ -22,6 +22,8 @@ export interface SysRole {
   builtIn: number;
   sort: number;
   description?: string;
+  /** 已绑定的权限点 ID（权限树回显用） */
+  permissionIds?: number[];
 }
 
 export interface SysPermission {

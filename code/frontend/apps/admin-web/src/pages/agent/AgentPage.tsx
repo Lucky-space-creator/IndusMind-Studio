@@ -4,7 +4,7 @@ import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Auth } from "@hwc/shared-auth";
-import { EmptyState, Panel, StatusTag, parseCitations } from "@hwc/shared-ui";
+import { EmptyState, JsonTextView, Panel, StatusTag, parseCitations } from "@hwc/shared-ui";
 import { ADMIN_PERM } from "@hwc/shared-types";
 import type { AgentDefinition, AgentFlow, AgentFlowNode, AgentRun, AgentStep, AgentToolBinding } from "@hwc/shared-types";
 import * as agentApi from "../../api/agent";
@@ -578,8 +578,13 @@ function RunTab() {
                   <span style={{ fontSize: 12, color: "#64748B" }}>{step.durationMs ?? "-"} ms</span>
                 </Space>
                 <Typography.Paragraph ellipsis={{ rows: 3, expandable: true }} style={{ marginBottom: 6, fontSize: 13 }}>
-                  {step.summary ?? step.detail ?? "-"}
+                  {step.summary ?? "-"}
                 </Typography.Paragraph>
+                {step.detail && (
+                  <div style={{ marginBottom: 6, padding: 8, background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 4 }}>
+                    <JsonTextView raw={step.detail} maxHeight={220} />
+                  </div>
+                )}
                 {parseCitations(step.citations).length > 0 && (
                   <Descriptions size="small" column={1}>
                     <Descriptions.Item label="引用">

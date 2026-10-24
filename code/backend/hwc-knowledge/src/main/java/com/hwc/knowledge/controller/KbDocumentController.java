@@ -11,8 +11,10 @@ import com.hwc.domain.knowledge.KbIndexTask;
 import com.hwc.knowledge.mapper.KbIndexTaskMapper;
 import com.hwc.knowledge.service.KbDocumentService;
 import com.hwc.knowledge.service.KbIndexTaskService;
+import com.hwc.knowledge.service.KbScopeResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,6 +44,7 @@ public class KbDocumentController {
     private final KbDocumentService documentService;
     private final KbIndexTaskService indexTaskService;
     private final KbIndexTaskMapper indexTaskMapper;
+    private final KbScopeResolver kbScopeResolver;
 
     @Operation(summary = "文档分页")
     @GetMapping({"/admin/knowledge/documents", "/user/knowledge/documents"})
@@ -50,9 +53,15 @@ public class KbDocumentController {
                                                @RequestParam(required = false) Long kbId,
                                                @RequestParam(required = false) String keyword,
                                                @RequestParam(required = false) String status,
-                                               @RequestParam(required = false) String docType) {
+                                               @RequestParam(required = false) String docType,
+                                               HttpServletRequest servletRequest) {
+        KbScopeResolver.KbScope scope = userScope(servletRequest);
+        if (scope != null && scope.allowsNone()) {
+            return Result.ok(PageResult.of(List.of(), 0, current, size));
+        }
         LambdaQueryWrapper<KbDocument> wrapper = new LambdaQueryWrapper<KbDocument>()
                 .eq(kbId != null, KbDocument::getKbId, kbId)
+                .in(scope != null && !scope.unrestricted(), KbDocument::getKbId, scope == null ? List.of() : scope.kbIds())
                 .and(keyword != null && !keyword.isBlank(),
                         w -> w.like(KbDocument::getDocName, keyword).or().like(KbDocument::getRemark, keyword))
                 .eq(status != null && !status.isBlank(), KbDocument::getStatus, status)
@@ -64,12 +73,22 @@ public class KbDocumentController {
 
     @Operation(summary = "文档详情")
     @GetMapping({"/admin/knowledge/documents/{id}", "/user/knowledge/documents/{id}"})
-    public Result<KbDocument> detail(@PathVariable Long id) {
+    public Result<KbDocument> detail(@PathVariable Long id, HttpServletRequest servletRequest) {
         KbDocument doc = documentService.getById(id);
         if (doc == null) {
             throw new BizException(CommonErrorCode.NOT_FOUND, "文档不存在");
         }
+        KbScopeResolver.KbScope scope = userScope(servletRequest);
+        if (scope != null && !scope.allows(doc.getKbId())) {
+            throw new BizException(CommonErrorCode.FORBIDDEN, "无权访问该文档，请联系管理员分配数据范围");
+        }
         return Result.ok(doc);
+    }
+
+    /** 用户端请求返回当前数据范围；管理端返回 null（配置端需要全量） */
+    private KbScopeResolver.KbScope userScope(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri != null && uri.startsWith("/api/user") ? kbScopeResolver.currentScope() : null;
     }
 
     @Operation(summary = "上传文档（解析分段并构建索引）")

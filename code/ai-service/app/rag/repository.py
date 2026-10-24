@@ -135,7 +135,8 @@ def vector_search(
         "FROM kb_segment_vector WHERE doc_status = 'enabled'"
     )
     params: list = [literal]
-    if kb_ids:
+    if kb_ids is not None:
+        # 空列表代表「无授权知识库」，必须显式过滤为 0 命中，不能退化为全库检索
         sql += " AND kb_id = ANY(%s)"
         params.append(list(kb_ids))
     sql += " ORDER BY embedding <=> %s::vector LIMIT %s"
@@ -151,7 +152,8 @@ def keyword_search(query: str, *, kb_ids: list[int] | None, top_k: int) -> list[
         "WHERE doc_status = 'enabled' AND keywords_tsv @@ plainto_tsquery('simple', %s)"
     )
     params: list = [query, query]
-    if kb_ids:
+    if kb_ids is not None:
+        # 同上：空列表必须过滤为 0 命中
         sql += " AND kb_id = ANY(%s)"
         params.append(list(kb_ids))
     sql += " ORDER BY score DESC LIMIT %s"

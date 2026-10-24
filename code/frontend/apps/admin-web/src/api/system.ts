@@ -31,7 +31,15 @@ export const listPermissions = () => api.get<SysPermission[]>("/api/admin/accoun
 export const listRoleDataScopes = (roleId: number) =>
   api.get<SysRoleDataScope[]>(`/api/admin/account/roles/${roleId}/data-scopes`);
 
-export const saveRoleDataScope = (roleId: number, body: Partial<SysRoleDataScope>) =>
+/** 数据范围保存体：scopeIds 支持一次授权多个对象；ALL 时忽略 */
+export interface DataScopeSaveBody {
+  scopeType: string;
+  scopeIds?: number[];
+  scopeId?: number;
+  remark?: string;
+}
+
+export const saveRoleDataScope = (roleId: number, body: DataScopeSaveBody) =>
   api.put<void>(`/api/admin/account/roles/${roleId}/data-scopes`, body);
 
 export const pageAuditLogs = (params: {

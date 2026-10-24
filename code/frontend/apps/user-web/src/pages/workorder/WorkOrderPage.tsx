@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Auth } from "@hwc/shared-auth";
-import { EmptyState, Panel, RiskTag, SkeletonPanel, StatusTag } from "@hwc/shared-ui";
+import { EmptyState, JsonTextView, Panel, RiskTag, SkeletonPanel, StatusTag } from "@hwc/shared-ui";
 import { USER_PERM, type WoWorkOrder, type WoWorkOrderPart } from "@hwc/shared-types";
 import { archiveWorkOrder, exportWorkOrderPdf, fetchWorkOrderDetail, fetchWorkOrders } from "../../api/workorder";
 import { Drawer } from "../../components/Drawer";
@@ -175,12 +175,12 @@ function OrderDetailBody({ order, parts }: { order: WoWorkOrder; parts: WoWorkOr
     ["根因结论", order.rootCause],
     ["风险等级", order.riskLevel === "high" ? "高风险" : order.riskLevel === "medium" ? "中风险" : "低风险"],
     ["安全要求", order.safetyRequirements],
-    ["维修步骤", order.repairSteps],
     ["预计停机", order.estDowntimeHours != null ? `${order.estDowntimeHours} 小时` : undefined],
     ["停机损失", order.downtimeCost != null ? `¥ ${order.downtimeCost}` : undefined],
     ["备件成本", order.partsCost != null ? `¥ ${order.partsCost}` : undefined],
     ["总成本", order.totalCost != null ? `¥ ${order.totalCost}` : undefined],
   ];
+  const partsTotal = parts.reduce((sum, p) => sum + (p.unitPrice ?? 0) * (p.quantity ?? 0), 0);
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-md border border-slate-200">
@@ -191,15 +191,25 @@ function OrderDetailBody({ order, parts }: { order: WoWorkOrder; parts: WoWorkOr
           </div>
         ))}
       </div>
+      <div>
+        <div className="mb-2 text-sm font-medium text-slate-700">维修步骤</div>
+        <div className="rounded-md border border-slate-200 bg-slate-50 px-3.5 py-3">
+          <JsonTextView raw={order.repairSteps} emptyText="暂无维修步骤（可能安全核查未通过或工单节点未执行）" />
+        </div>
+      </div>
       {parts.length > 0 && (
         <div>
-          <div className="mb-2 text-sm font-medium text-slate-700">备件清单（含库存快照）</div>
+          <div className="mb-2 text-sm font-medium text-slate-700">
+            备件清单（含库存快照）
+            {partsTotal > 0 && <span className="ml-2 text-xs font-normal text-slate-400">小计 ¥ {partsTotal.toFixed(2)}</span>}
+          </div>
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-left text-xs text-slate-500">
                 <th className="py-2 pr-3 font-medium">备件</th>
                 <th className="py-2 pr-3 font-medium">型号</th>
                 <th className="py-2 pr-3 font-medium">数量</th>
+                <th className="py-2 pr-3 font-medium">单价</th>
                 <th className="py-2 font-medium">库存快照</th>
               </tr>
             </thead>
@@ -209,6 +219,7 @@ function OrderDetailBody({ order, parts }: { order: WoWorkOrder; parts: WoWorkOr
                   <td className="py-2 pr-3 text-slate-700">{p.partName}</td>
                   <td className="py-2 pr-3 text-slate-500">{p.partModel || "-"}</td>
                   <td className="py-2 pr-3 tabular-nums text-slate-700">{p.quantity}</td>
+                  <td className="py-2 pr-3 tabular-nums text-slate-500">{p.unitPrice != null ? `¥ ${p.unitPrice}` : "-"}</td>
                   <td className="py-2 tabular-nums text-slate-500">{p.stockSnapshot ?? "-"}</td>
                 </tr>
               ))}

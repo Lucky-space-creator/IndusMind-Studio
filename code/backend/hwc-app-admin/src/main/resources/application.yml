@@ -45,6 +45,8 @@ hwc:
     connect-timeout-ms: 5000
     read-timeout-ms: 600000
     retry-count: 1
+    circuit-failure-threshold: ${AI_CIRCUIT_FAILURE_THRESHOLD:3}
+    circuit-open-ms: ${AI_CIRCUIT_OPEN_MS:30000}
   minio:
     endpoint: http://${MINIO_HOST:localhost}:${MINIO_API_PORT:9000}
     access-key: ${MINIO_ROOT_USER:minioadmin}

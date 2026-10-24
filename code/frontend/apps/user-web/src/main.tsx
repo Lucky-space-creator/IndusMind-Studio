@@ -3,7 +3,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { HashRouter, useRoutes } from "react-router-dom";
 import { PermissionProvider } from "@hwc/shared-auth";
-import { SkeletonStyle } from "@hwc/shared-ui";
+import { AppErrorBoundary, SkeletonStyle } from "@hwc/shared-ui";
 import { ToastHost } from "./components/Toast";
 import routes from "./router";
 import { wireApi } from "./api/wire";
@@ -22,10 +22,12 @@ function Root() {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <PermissionProvider end="user">
+      <PermissionProvider end="user" onPermissionsChanged={() => queryClient.invalidateQueries()}>
         <HashRouter>
           <SkeletonStyle />
-          <Root />
+          <AppErrorBoundary>
+            <Root />
+          </AppErrorBoundary>
           <ToastHost />
         </HashRouter>
       </PermissionProvider>

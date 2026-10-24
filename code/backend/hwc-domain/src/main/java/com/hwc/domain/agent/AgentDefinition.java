@@ -16,6 +16,8 @@ public class AgentDefinition extends BaseEntity {
 
     private String domain;
 
+    private String baseTemplate;
+
     private String responsibility;
 
     private String instruction;

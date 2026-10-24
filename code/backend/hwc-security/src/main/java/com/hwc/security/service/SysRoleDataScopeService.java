@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,35 +43,44 @@ public class SysRoleDataScopeService {
         if (sysRoleMapper.selectByRoleIdForUpdate(roleId) == null) {
             throw new BizException(CommonErrorCode.NOT_FOUND, "角色不存在");
         }
-        Long scopeId;
-        if (SCOPE_TYPE_ALL.equals(request.getScopeType())) {
-            scopeId = SCOPE_ID_ALL;
-        } else if (request.getScopeId() == null || request.getScopeId() <= 0) {
-            throw new BizException(CommonErrorCode.PARAM_INVALID, "请指定范围对象");
-        } else {
-            scopeId = request.getScopeId();
-        }
-        List<SysRoleDataScope> existingScopes = sysRoleDataScopeMapper.selectList(
-                new LambdaQueryWrapper<SysRoleDataScope>().eq(SysRoleDataScope::getRoleId, roleId));
-        if (existingScopes.isEmpty()) {
+        List<Long> scopeIds = resolveScopeIds(request);
+        // 覆盖式保存：该角色的数据范围由此表单完整定义（支持同一类型授权多个对象）
+        sysRoleDataScopeMapper.delete(new LambdaQueryWrapper<SysRoleDataScope>()
+                .eq(SysRoleDataScope::getRoleId, roleId));
+        for (Long scopeId : scopeIds) {
             SysRoleDataScope scope = new SysRoleDataScope();
             scope.setRoleId(roleId);
             scope.setScopeType(request.getScopeType());
             scope.setScopeId(scopeId);
             scope.setRemark(request.getRemark());
             sysRoleDataScopeMapper.insert(scope);
-        } else {
-            SysRoleDataScope existing = existingScopes.get(0);
-            SysRoleDataScope patch = new SysRoleDataScope();
-            patch.setId(existing.getId());
-            patch.setVersion(existing.getVersion());
-            patch.setScopeType(request.getScopeType());
-            patch.setScopeId(scopeId);
-            patch.setRemark(request.getRemark());
-            if (sysRoleDataScopeMapper.updateById(patch) == 0) {
-                throw new BizException(CommonErrorCode.PARAM_INVALID, "数据已被他人修改，请刷新后重试");
-            }
         }
+    }
+
+    /**
+     * 解析本次保存的范围对象 ID 集合。
+     * ALL 固定为 0；其余类型优先取 scopeIds，缺失时退化为单值 scopeId（兼容旧调用）。
+     */
+    private List<Long> resolveScopeIds(DataScopeSaveRequest request) {
+        if (SCOPE_TYPE_ALL.equals(request.getScopeType())) {
+            return List.of(SCOPE_ID_ALL);
+        }
+        List<Long> raw = new ArrayList<>();
+        if (request.getScopeIds() != null) {
+            raw.addAll(request.getScopeIds());
+        }
+        if (raw.isEmpty() && request.getScopeId() != null) {
+            raw.add(request.getScopeId());
+        }
+        List<Long> ids = raw.stream()
+                .filter(Objects::nonNull)
+                .filter(id -> id > 0)
+                .distinct()
+                .collect(Collectors.toList());
+        if (ids.isEmpty()) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID, "请指定范围对象");
+        }
+        return ids;
     }
 
     private DataScopeVO toVO(SysRoleDataScope scope) {

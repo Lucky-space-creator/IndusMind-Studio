@@ -37,6 +37,10 @@ def search(
 ) -> list[SegmentHit]:
     limit = top_k or settings.rag_top_k
     pool = max(limit * 3, limit + 5)
+    if kb_ids is not None and len(kb_ids) == 0:
+        # 调用方已明确「无可用知识库」：直接返回空，避免降级为全库检索
+        log.info("知识检索跳过：kb_ids 为空（无授权知识库）")
+        return []
     query_vector = embed_query(query)
     vector_hits = repository.vector_search(query_vector, kb_ids=kb_ids, top_k=pool) if query_vector else []
     keyword_hits = repository.keyword_search(query, kb_ids=kb_ids, top_k=pool)

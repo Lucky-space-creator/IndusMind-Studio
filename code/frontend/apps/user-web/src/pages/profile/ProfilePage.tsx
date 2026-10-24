@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { useAuthStore } from "@hwc/shared-auth";
-import { EmptyState, Panel, RiskTag, SkeletonPanel } from "@hwc/shared-ui";
+import { useAuthStore, usePermission } from "@hwc/shared-auth";
+import { EmptyState, Panel, PermissionList, RiskTag, SkeletonPanel } from "@hwc/shared-ui";
 import { fetchDiagnosisRecords } from "../../api/diagnosis";
 import { fetchWorkOrders } from "../../api/workorder";
 
@@ -10,18 +10,11 @@ export default function ProfilePage() {
   const realName = useAuthStore((s) => s.realName);
   const username = useAuthStore((s) => s.username);
   const roles = useAuthStore((s) => s.roles);
-  const dataScope = useAuthStore((s) => s.dataScope);
+  const permissions = useAuthStore((s) => s.permissions);
+  const permissionDetails = useAuthStore((s) => s.permissionDetails);
+  const { dataScopeText } = usePermission();
   const diagnosis = useQuery({ queryKey: ["profile-diagnosis"], queryFn: () => fetchDiagnosisRecords({ current: 1, size: 5 }) });
   const orders = useQuery({ queryKey: ["profile-orders"], queryFn: () => fetchWorkOrders({ current: 1, size: 5 }) });
-
-  const scopeText =
-    dataScope?.scopeType === "ALL"
-      ? "全部数据"
-      : dataScope?.scopeType === "LINE"
-        ? `仅本产线（${dataScope.scopeValue ?? "-"}）`
-        : dataScope?.scopeType === "DEVICE"
-          ? "指定设备"
-          : "按角色授权";
 
   return (
     <div className="flex flex-col gap-4">
@@ -41,9 +34,24 @@ export default function ProfilePage() {
           </div>
           <div>
             <div className="text-xs text-slate-500">数据范围</div>
-            <div className="mt-0.5 text-slate-800">{scopeText}</div>
+            <div className="mt-0.5 text-slate-800">{dataScopeText}</div>
           </div>
         </div>
+      </Panel>
+
+      <Panel
+        title="我的权限"
+        subtitle={`共 ${permissionDetails.length} 项`}
+        extra={<span className="text-xs text-slate-400">管理员调整权限后自动同步</span>}
+      >
+        <PermissionList
+          items={permissionDetails}
+          emptyHint={
+            permissions.length > 0
+              ? "已获得权限，明细仍在同步，请稍后刷新"
+              : "当前账号暂无已授权的权限点，请联系管理员分配角色"
+          }
+        />
       </Panel>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">

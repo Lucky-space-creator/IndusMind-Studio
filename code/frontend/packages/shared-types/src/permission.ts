@@ -84,3 +84,29 @@ export const ALL_PERMISSIONS: readonly string[] = Object.freeze([
   ...Object.values(ADMIN_PERM),
   ...Object.values(USER_PERM),
 ]);
+
+/** 权限模块中文名（与 sys_permission.module 对应） */
+export const PERMISSION_MODULE_LABEL: Record<string, string> = {
+  device: "设备配置",
+  knowledge: "知识库",
+  docgraph: "文档关联",
+  data: "数据管理",
+  agent: "Agent 与流程",
+  publish: "服务发布",
+  audit: "审计日志",
+  account: "账号权限",
+  dashboard: "设备看板",
+  chat: "智能问答",
+  diagnosis: "智能诊断",
+  trace: "故障溯源",
+  workorder: "维修工单",
+};
+
+/** 权限动作中文名（与 sys_permission.action 对应） */
+export const PERMISSION_ACTION_LABEL: Record<string, string> = {
+  read: "查看",
+  write: "编辑",
+  publish: "启停",
+  delete: "删除",
+  export: "导出",
+};

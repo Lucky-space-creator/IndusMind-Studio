@@ -73,12 +73,25 @@ export default function DocGraphPage() {
 
   const nodeMap = useMemo(() => new Map((nodes ?? []).map((n) => [n.id, n])), [nodes]);
 
-  /** ECharts 关系图渲染 */
+  /**
+   * ECharts 关系图渲染。
+   * 重要：chartRef 指向的节点必须「只归 ECharts 所有」，内部不允许出现任何 React 子节点，
+   * 否则卸载时 React 会对已被 ECharts 改写的 DOM 执行 removeChild，抛
+   * `Failed to execute 'removeChild' on 'Node'`。占位提示已改为绝对定位的兄弟层。
+   */
   useEffect(() => {
-    if (!chartRef.current) return;
-    if (!chart.current) {
-      chart.current = echarts.init(chartRef.current);
+    const el = chartRef.current;
+    if (!el) return;
+    // 未选知识库：销毁实例，让容器保持干净
+    if (kbId == null) {
+      const stale = echarts.getInstanceByDom(el);
+      if (stale) stale.dispose();
+      chart.current = null;
+      return;
     }
+    // 复用已有实例，避免 StrictMode 双执行下重复初始化
+    const inst = echarts.getInstanceByDom(el) ?? echarts.init(el);
+    chart.current = inst;
     const list = edges?.records ?? [];
     const edgeNodeIds = new Set<string>();
     list.forEach((e) => {
@@ -97,8 +110,10 @@ export default function DocGraphPage() {
       }));
     const renderNodes = [...visibleNodes.slice(0, 40), ...virtualNodes];
     const nodeTypeOf = (t: string) => (t === "doc" ? "document" : t);
-    chart.current.setOption({
-      tooltip: { formatter: (p: { data?: { name?: string; relation?: string } }) => p.data?.name ?? "" },
+    const option: echarts.EChartsOption = {
+      tooltip: {
+        formatter: (params) => (params as unknown as { data?: { name?: string } }).data?.name ?? "",
+      },
       series: [
         {
           type: "graph",
@@ -107,13 +122,20 @@ export default function DocGraphPage() {
           draggable: true,
           force: { repulsion: 220, edgeLength: 90 },
           label: { show: true, fontSize: 10, color: "#1E293B", width: 90, overflow: "truncate" },
-          edgeLabel: { show: true, fontSize: 9, color: "#64748B", formatter: (p: { data?: { relation?: string } }) => p.data?.relation ?? "" },
+          edgeLabel: {
+            show: true,
+            fontSize: 9,
+            color: "#64748B",
+            formatter: (params) =>
+              (params as unknown as { data?: { relation?: string } }).data?.relation ?? "",
+          },
           data: renderNodes.map((n) => ({
             id: String(n.id),
             name: n.title,
             symbolSize: nodeTypeOf(n.nodeType) === "document" ? 40 : nodeTypeOf(n.nodeType) === "section" ? 26 : 18,
             itemStyle: {
-              color: nodeTypeOf(n.nodeType) === "document" ? "#0E6E8C" : nodeTypeOf(n.nodeType) === "section" ? "#1D4ED8" : "#94A3B8",
+              color:
+                nodeTypeOf(n.nodeType) === "document" ? "#0E6E8C" : nodeTypeOf(n.nodeType) === "section" ? "#1D4ED8" : "#94A3B8",
             },
           })),
           links: list.map((e) => ({
@@ -128,16 +150,21 @@ export default function DocGraphPage() {
           })),
         },
       ],
-    });
-    return undefined as unknown as void;
-  }, [nodes, edges]);
+    };
+    // replaceMerge 保证切换知识库时旧节点不会残留（merge 模式下数据变少会留残影）
+    inst.setOption(option, { replaceMerge: ["series"] });
+  }, [nodes, edges, kbId]);
 
   useEffect(() => {
-    const onResize = () => chart.current?.resize();
+    const onResize = () => {
+      const inst = chart.current;
+      if (inst && !inst.isDisposed()) inst.resize();
+    };
     window.addEventListener("resize", onResize);
     return () => {
       window.removeEventListener("resize", onResize);
-      chart.current?.dispose();
+      const inst = chart.current;
+      if (inst && !inst.isDisposed()) inst.dispose();
       chart.current = null;
     };
   }, []);
@@ -369,9 +396,23 @@ export default function DocGraphPage() {
           }
           bodyStyle={{ padding: 8 }}
         >
-          <div ref={chartRef} style={{ height: 320, background: "#F8FAFC", borderRadius: 6 }}>
+          <div style={{ position: "relative", height: 320 }}>
+            {/* 该节点由 ECharts 独占，内部不要再放任何 React 子节点 */}
+            <div ref={chartRef} style={{ width: "100%", height: "100%", background: "#F8FAFC", borderRadius: 6 }} />
             {kbId == null && (
-              <EmptyState description="选择知识库后展示文档关联图（可拖拽、缩放）" style={{ padding: "120px 16px" }} />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "#F8FAFC",
+                  borderRadius: 6,
+                }}
+              >
+                <EmptyState description="选择知识库后展示文档关联图（可拖拽、缩放）" />
+              </div>
             )}
           </div>
         </Panel>

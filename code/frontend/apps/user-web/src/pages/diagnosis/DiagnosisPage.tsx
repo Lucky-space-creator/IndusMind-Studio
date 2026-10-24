@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Auth, usePermission } from "@hwc/shared-auth";
-import { CitationList, EmptyState, RiskTag, SkeletonPanel, tokens } from "@hwc/shared-ui";
+import { CitationList, EmptyState, JsonTextView, RiskTag, SkeletonPanel, tokens } from "@hwc/shared-ui";
 import {
   USER_PERM,
   type DiagnosisRecord,
@@ -100,7 +100,7 @@ export default function DiagnosisPage() {
     setDatasetId(record.datasetId);
     setResult({
       runId: String(record.runId),
-      steps: detail.steps.map((s, i) => ({
+      steps: (detail.steps ?? []).map((s, i) => ({
         stepOrder: s.stepOrder ?? i + 1,
         agentCode: s.phase ?? String(s.agentId),
         agentName: s.phase ?? `Agent #${s.agentId}`,
@@ -216,7 +216,7 @@ export default function DiagnosisPage() {
             <span className="text-xs text-slate-400">Run #{result.runId}</span>
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {result.steps.map((s: DiagnosisStepResult) => (
+            {(result.steps ?? []).map((s: DiagnosisStepResult) => (
               <StepCard key={`${s.stepOrder}-${s.agentCode}`} step={s} />
             ))}
           </div>
@@ -249,10 +249,10 @@ export default function DiagnosisPage() {
           <p className="whitespace-pre-wrap rounded-md bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-700">
             {result.conclusion}
           </p>
-          {result.citations.length > 0 && (
+          {(result.citations ?? []).length > 0 && (
             <div className="mt-3">
               <div className="mb-1.5 text-xs text-slate-500">引用溯源：</div>
-              <CitationList citations={result.citations} columns={2} />
+              <CitationList citations={result.citations ?? []} columns={2} />
             </div>
           )}
         </div>
@@ -328,154 +328,14 @@ function StepCard({ step }: { step: DiagnosisStepResult }) {
             >
               {expanded ? "收起详情" : "展开详情"}
             </button>
-            {expanded && <AgentOutputView output={step.output} />}
+            {expanded && (
+              <div className="mt-2 rounded-md bg-slate-50 px-3 py-2.5">
+                <JsonTextView raw={step.output} maxHeight={288} />
+              </div>
+            )}
           </>
         )}
       </div>
-    </div>
-  );
-}
-const FIELD_LABELS: Record<string, string> = {
-  deviceStatus: "设备状态",
-  severity: "严重程度",
-  confirmedAnomalies: "确认异常",
-  anomalies: "异常",
-  summary: "摘要",
-  rootCauses: "候选根因",
-  topCause: "首要根因",
-  confidence: "置信度",
-  cause: "根因描述",
-  evidence: "证据",
-  spareParts: "备件清单",
-  partName: "备件名称",
-  partModel: "型号",
-  quantity: "数量",
-  unitPrice: "单价",
-  stock: "库存",
-  downtimeLoss: "停机损失",
-  costLevel: "成本等级",
-  checkResult: "核查结论",
-  safetyRequirements: "安全要求",
-  riskLevel: "风险等级",
-  reason: "说明",
-  orderTitle: "工单标题",
-  priority: "优先级",
-  steps: "维修步骤",
-  safetyNotes: "安全注意事项",
-  metricId: "指标ID",
-  metricName: "指标名称",
-  anomalyType: "异常类型",
-  status: "状态",
-};
-
-const ENUM_LABELS: Record<string, string> = {
-  normal: "正常",
-  abnormal: "异常",
-  warn: "警告",
-  fault: "故障",
-  low: "低",
-  medium: "中",
-  high: "高",
-  pass: "通过",
-  fail: "未通过",
-  threshold_breach: "阈值越限",
-  sudden_fluctuation: "突发波动",
-  continuous_trend: "持续趋势",
-  missing_data: "数据缺失",
-};
-
-function tryParseJson(text: string): unknown {
-  try {
-    return JSON.parse(text);
-  } catch {
-    return undefined;
-  }
-}
-
-function formatScalar(value: string | number | boolean): string {
-  const text = typeof value === "string" ? value : String(value);
-  return ENUM_LABELS[text] ?? text;
-}
-
-function ScalarValue({ value }: { value: string | number | boolean }) {
-  return <span className="text-slate-700">{formatScalar(value)}</span>;
-}
-
-function ValueView({ value }: { value: unknown }) {
-  if (value == null) return null;
-  if (typeof value === "string") {
-    const inner = tryParseJson(value);
-    if (inner && typeof inner === "object") {
-      return <StructuredView data={inner as Record<string, unknown>} />;
-    }
-    return <ScalarValue value={value} />;
-  }
-  if (typeof value === "number" || typeof value === "boolean") {
-    return <ScalarValue value={value} />;
-  }
-  if (Array.isArray(value)) {
-    return <ArrayView items={value} />;
-  }
-  return <StructuredView data={value as Record<string, unknown>} />;
-}
-
-function ArrayView({ items }: { items: unknown[] }) {
-  if (items.length === 0) {
-    return <span className="text-slate-400">无</span>;
-  }
-  return (
-    <div className="flex flex-col gap-1">
-      {items.map((item, i) => (
-        <div key={i} className="rounded border border-slate-200 bg-white px-2 py-1.5">
-          {item != null && typeof item === "object" ? (
-            <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-              {Object.entries(item as Record<string, unknown>).map(([k, v]) =>
-                v == null || typeof v === "object" ? null : (
-                  <span key={k}>
-                    <span className="text-slate-400">{FIELD_LABELS[k] ?? k}：</span>
-                    <span className="text-slate-700">{formatScalar(v as string | number | boolean)}</span>
-                  </span>
-                ),
-              )}
-            </div>
-          ) : (
-            <span className="text-slate-700">{formatScalar(item as string | number | boolean)}</span>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function StructuredView({ data }: { data: Record<string, unknown> }) {
-  const entries = Object.entries(data).filter(([, v]) => v != null && v !== "");
-  if (entries.length === 0) {
-    return <span className="text-slate-400">无详细数据</span>;
-  }
-  return (
-    <div className="flex flex-col gap-1.5">
-      {entries.map(([k, v]) => (
-        <div key={k} className="flex flex-col gap-0.5">
-          <span className="text-slate-400">
-            {FIELD_LABELS[k] ?? k}
-            {Array.isArray(v) ? `（${v.length}）` : ""}
-          </span>
-          <ValueView value={v} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function AgentOutputView({ output }: { output: string }) {
-  const parsed = useMemo(() => tryParseJson(output), [output]);
-  return (
-    <div className="mt-2 max-h-72 overflow-auto rounded-md bg-slate-50 px-3 py-2.5 text-xs leading-relaxed text-slate-600">
-      {parsed && typeof parsed === "object" ? (
-        <StructuredView data={parsed as Record<string, unknown>} />
-      ) : (
-        <span className="whitespace-pre-wrap">{output}</span>
-      )}
     </div>
   );
 }

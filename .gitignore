@@ -39,3 +39,12 @@ venv/
 
 # Misc
 nul
+
+# Agent 工作区（本地记忆、会话摘要，不入库）
+.workbuddy/
+
+# 崩溃转储
+*.stackdump
+
+# 本地密钥（模板见 config/.env.example）
+code/ai-service/config/.env

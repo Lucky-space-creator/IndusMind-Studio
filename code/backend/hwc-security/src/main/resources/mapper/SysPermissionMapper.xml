@@ -13,4 +13,19 @@
         AND p.deleted = 0
         AND (p.end_type = #{end} OR p.end_type = 'both')
     </select>
+
+    <!-- 权限点明细：供界面展示"当前账号拥有哪些权限"，与 selectPermissionCodes 同源 -->
+    <select id="selectPermissionDetails" resultType="com.hwc.domain.system.SysPermission">
+        SELECT DISTINCT p.id, p.code, p.name, p.module, p.resource, p.action,
+               p.end_type, p.sort
+        FROM sys_permission p
+        INNER JOIN sys_role_permission rp ON rp.permission_id = p.id
+        WHERE rp.role_id IN
+        <foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
+            #{roleId}
+        </foreach>
+        AND p.deleted = 0
+        AND (p.end_type = #{end} OR p.end_type = 'both')
+        ORDER BY p.sort ASC, p.id ASC
+    </select>
 </mapper>

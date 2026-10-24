@@ -8,8 +8,10 @@ import com.hwc.common.result.PageResult;
 import com.hwc.common.result.Result;
 import com.hwc.domain.knowledge.KbKnowledgeBase;
 import com.hwc.knowledge.service.KbKnowledgeBaseService;
+import com.hwc.knowledge.service.KbScopeResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @Tag(name = "知识库")
 @RestController
 @RequestMapping("/api")
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class KbKnowledgeBaseController {
 
     private final KbKnowledgeBaseService kbService;
+    private final KbScopeResolver kbScopeResolver;
 
     @Operation(summary = "知识库分页")
     @GetMapping({"/admin/knowledge/kbs", "/user/knowledge/kbs"})
@@ -36,12 +41,18 @@ public class KbKnowledgeBaseController {
                                                     @RequestParam(defaultValue = "10") long size,
                                                     @RequestParam(required = false) String keyword,
                                                     @RequestParam(required = false) Long devTypeId,
-                                                    @RequestParam(required = false) String faultLevel) {
+                                                    @RequestParam(required = false) String faultLevel,
+                                                    HttpServletRequest servletRequest) {
+        KbScopeResolver.KbScope scope = userScope(servletRequest);
+        if (scope != null && scope.allowsNone()) {
+            return Result.ok(PageResult.of(List.of(), 0, current, size));
+        }
         LambdaQueryWrapper<KbKnowledgeBase> wrapper = new LambdaQueryWrapper<KbKnowledgeBase>()
                 .and(keyword != null && !keyword.isBlank(),
                         w -> w.like(KbKnowledgeBase::getName, keyword).or().like(KbKnowledgeBase::getVendor, keyword))
                 .eq(devTypeId != null, KbKnowledgeBase::getDevTypeId, devTypeId)
                 .eq(faultLevel != null && !faultLevel.isBlank(), KbKnowledgeBase::getFaultLevel, faultLevel)
+                .in(scope != null && !scope.unrestricted(), KbKnowledgeBase::getId, scope == null ? List.of() : scope.kbIds())
                 .orderByDesc(KbKnowledgeBase::getId);
         Page<KbKnowledgeBase> page = kbService.page(new Page<>(current, size), wrapper);
         return Result.ok(PageResult.of(page.getRecords(), page.getTotal(), page.getCurrent(), page.getSize()));
@@ -49,12 +60,22 @@ public class KbKnowledgeBaseController {
 
     @Operation(summary = "知识库详情")
     @GetMapping({"/admin/knowledge/kbs/{id}", "/user/knowledge/kbs/{id}"})
-    public Result<KbKnowledgeBase> detail(@PathVariable Long id) {
+    public Result<KbKnowledgeBase> detail(@PathVariable Long id, HttpServletRequest servletRequest) {
         KbKnowledgeBase kb = kbService.getById(id);
         if (kb == null) {
             throw new BizException(CommonErrorCode.NOT_FOUND, "知识库不存在");
         }
+        KbScopeResolver.KbScope scope = userScope(servletRequest);
+        if (scope != null && !scope.allows(id)) {
+            throw new BizException(CommonErrorCode.FORBIDDEN, "无权访问该知识库，请联系管理员分配数据范围");
+        }
         return Result.ok(kb);
+    }
+
+    /** 用户端请求返回当前数据范围；管理端返回 null（配置端需要全量） */
+    private KbScopeResolver.KbScope userScope(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri != null && uri.startsWith("/api/user") ? kbScopeResolver.currentScope() : null;
     }
 
     @Operation(summary = "新增知识库")

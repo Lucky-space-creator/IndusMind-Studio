@@ -8,6 +8,7 @@ import DocGraphPage from "../pages/docgraph/DocGraphPage";
 import ForbiddenPage from "../pages/ForbiddenPage";
 import KnowledgePage from "../pages/knowledge/KnowledgePage";
 import LoginPage from "../pages/login/LoginPage";
+import NotFoundPage from "../pages/NotFoundPage";
 import PublishPage from "../pages/publish/PublishPage";
 import AccountPage from "../pages/account/AccountPage";
 import { RequireAuth, RequirePermission } from "./guard";
@@ -97,8 +98,10 @@ const routes = [
           </RequirePermission>
         ),
       },
+      { path: "*", element: <NotFoundPage /> },
     ],
   },
+  { path: "*", element: <NotFoundPage /> },
 ];
 
 export default routes;

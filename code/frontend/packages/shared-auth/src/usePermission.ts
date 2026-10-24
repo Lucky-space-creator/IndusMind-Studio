@@ -8,6 +8,8 @@ export interface PermissionApi {
   hasAny: (codes: string[]) => boolean;
   /** 全部权限码满足才通过 */
   hasAll: (codes: string[]) => boolean;
+  /** 当前权限码集合（权限刷新后引用会变化，可作为 useMemo 依赖） */
+  permissions: string[];
   /** 后端下发的菜单（可能为空，此时使用本地菜单配置过滤） */
   serverMenus: MenuInfo[];
   /** 按权限过滤菜单配置（无权限的项不渲染） */
@@ -59,6 +61,7 @@ export function usePermission(): PermissionApi {
     has: hasPermission,
     hasAny: hasAnyPermission,
     hasAll: hasAllPermissions,
+    permissions,
     serverMenus,
     filterMenus,
     dataScopeText: scopeText,

@@ -4,7 +4,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PermissionProvider } from "@hwc/shared-auth";
-import { SkeletonStyle } from "@hwc/shared-ui";
+import { AppErrorBoundary, SkeletonStyle } from "@hwc/shared-ui";
 import { HashRouter, useRoutes } from "react-router-dom";
 import routes from "./router";
 import { wireApi } from "./api/wire";
@@ -34,10 +34,12 @@ createRoot(document.getElementById("root")!).render(
     >
       <AntApp>
         <QueryClientProvider client={queryClient}>
-          <PermissionProvider end="admin">
+          <PermissionProvider end="admin" onPermissionsChanged={() => queryClient.invalidateQueries()}>
             <HashRouter>
               <SkeletonStyle />
-              <Root />
+              <AppErrorBoundary>
+                <Root />
+              </AppErrorBoundary>
             </HashRouter>
           </PermissionProvider>
         </QueryClientProvider>

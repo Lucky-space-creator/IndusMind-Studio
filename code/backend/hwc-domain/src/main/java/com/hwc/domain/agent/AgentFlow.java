@@ -21,4 +21,6 @@ public class AgentFlow extends BaseVersionLockEntity {
     private Integer isPreset;
 
     private String description;
+
+    private String publishedSnapshot;
 }

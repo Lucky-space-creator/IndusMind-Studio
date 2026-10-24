@@ -11,4 +11,7 @@ import java.util.List;
 public interface SysPermissionMapper extends BaseMapper<SysPermission> {
 
     List<String> selectPermissionCodes(@Param("roleIds") List<Long> roleIds, @Param("end") String end);
+
+    /** 权限点明细（含中文名称与模块），用于界面展示当前账号的具体权限 */
+    List<SysPermission> selectPermissionDetails(@Param("roleIds") List<Long> roleIds, @Param("end") String end);
 }

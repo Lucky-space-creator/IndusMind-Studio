@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,4 +18,6 @@ public class RoleVO {
     private Integer builtIn;
     private Integer sort;
     private String description;
+    /** 已绑定的权限点 ID，供前端权限树回显 */
+    private List<Long> permissionIds;
 }

@@ -35,7 +35,7 @@ export default function KnowledgeSearchPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Panel title="知识检索" subtitle="覆盖设备手册、故障案例、安全规程（只读）">
+      <Panel title="知识检索" subtitle="覆盖设备手册、故障案例、安全规程（只读；检索范围受账号数据权限约束）">
         <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
           <label className="flex min-w-[260px] flex-1 flex-col gap-1.5">
             <span className="text-sm font-medium text-slate-700">检索内容</span>
@@ -81,6 +81,11 @@ export default function KnowledgeSearchPage() {
             {results.isFetching ? "检索中…" : "检索"}
           </button>
         </form>
+        {kbs.isSuccess && (kbs.data ?? []).length === 0 && (
+          <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            当前账号未被授权任何知识库，检索不会返回内容。请联系管理员在「账号权限 → 数据范围」中分配知识库或设备类型。
+          </div>
+        )}
       </Panel>
 
       <Panel

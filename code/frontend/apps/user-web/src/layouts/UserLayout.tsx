@@ -15,16 +15,16 @@ function filterNav(items: NavItem[], hasAny: (codes: string[]) => boolean): NavI
 
 /** 用户端整体框架：顶部一级导航(64px) + 二级导航(48px) + 主内容区 */
 export default function UserLayout() {
-  const { hasAny } = usePermission();
+  const { hasAny, permissions, dataScopeText } = usePermission();
   const location = useLocation();
   const realName = useAuthStore((s) => s.realName);
   const username = useAuthStore((s) => s.username);
-  const dataScope = useAuthStore((s) => s.dataScope);
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const nav = useMemo(() => filterNav(USER_NAV, hasAny), [hasAny]);
-  const auxNav = useMemo(() => filterNav(USER_AUX_NAV, hasAny), [hasAny]);
+  // permissions 参与依赖：权限刷新后 hasAny 的引用不变，只有权限集合变化才会重算菜单
+  const nav = useMemo(() => filterNav(USER_NAV, hasAny), [hasAny, permissions]);
+  const auxNav = useMemo(() => filterNav(USER_AUX_NAV, hasAny), [hasAny, permissions]);
 
   /** 当前一级项 + 其二级（含设备详情等隐式子页也归入设备监控） */
   const current = useMemo(() => {
@@ -133,8 +133,8 @@ export default function UserLayout() {
                 {item.title}
               </NavLink>
             ))}
-            {dataScope && dataScope.scopeType === "LINE" && (
-              <span className="ml-auto whitespace-nowrap text-xs text-slate-400">数据范围：仅本产线</span>
+            {dataScopeText !== "全部数据" && (
+              <span className="ml-auto whitespace-nowrap text-xs text-slate-400">数据范围：{dataScopeText}</span>
             )}
           </div>
         </div>

@@ -772,8 +772,11 @@ function RuleTab() {
         destroyOnClose
       >
         <Form form={form} layout="vertical" onFinish={(v) => save.mutate(v)}>
-          <Form.Item name="metricId" label="指标 ID" rules={[{ required: true, message: "请输入指标 ID" }]}>
-            <InputNumber style={{ width: "100%" }} min={1} disabled />
+          <Form.Item name="metricId" label="所属指标" rules={[{ required: true, message: "请选择指标" }]}>
+            <Select
+              disabled
+              options={(metrics?.records ?? []).map((m) => ({ value: m.id, label: `${m.name}（${m.code}）` }))}
+            />
           </Form.Item>
           <Form.Item name="level" label="等级" initialValue="warn" rules={[{ required: true }]}>
             <Select

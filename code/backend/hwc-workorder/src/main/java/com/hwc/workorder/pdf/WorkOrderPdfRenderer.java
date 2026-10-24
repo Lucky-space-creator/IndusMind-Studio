@@ -1,5 +1,7 @@
 package com.hwc.workorder.pdf;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hwc.domain.device.DevInfo;
 import com.hwc.domain.workorder.WoWorkOrder;
 import com.hwc.domain.workorder.WoWorkOrderPart;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -17,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 public class WorkOrderPdfRenderer {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public ByteArrayOutputStream render(WoWorkOrder order, java.util.List<WoWorkOrderPart> parts, DevInfo device) {
         String html = buildHtml(order, parts, device);
@@ -80,12 +84,41 @@ public class WorkOrderPdfRenderer {
                 escape(order.getFaultSummary()),
                 escape(order.getRootCause()),
                 escape(order.getSafetyRequirements()),
-                escape(order.getRepairSteps()),
+                formatSteps(order.getRepairSteps()),
                 rows,
-                order.getEstDowntimeHours(),
-                order.getDowntimeCost(),
-                order.getPartsCost(),
-                order.getTotalCost());
+                order.getEstDowntimeHours() != null ? order.getEstDowntimeHours().toPlainString() : "-",
+                money(order.getDowntimeCost()),
+                money(order.getPartsCost()),
+                money(order.getTotalCost()));
+    }
+
+    /** 维修步骤：JSON 数组 → 编号段落；非 JSON 时按换行输出 */
+    private String formatSteps(String raw) {
+        if (!StringUtils.hasText(raw)) {
+            return "-";
+        }
+        try {
+            JsonNode node = MAPPER.readTree(raw);
+            if (node != null && node.isArray()) {
+                StringBuilder sb = new StringBuilder();
+                int index = 1;
+                for (JsonNode item : node) {
+                    String action = item.isTextual() ? item.asText() : item.path("action").asText("");
+                    if (!StringUtils.hasText(action)) {
+                        continue;
+                    }
+                    sb.append(index++).append(". ").append(escape(action)).append("<br/>");
+                }
+                return sb.length() == 0 ? "-" : sb.toString();
+            }
+        } catch (Exception ignored) {
+            // 非 JSON，按纯文本处理
+        }
+        return escape(raw).replace("\n", "<br/>");
+    }
+
+    private String money(BigDecimal value) {
+        return value == null ? "-" : "¥ " + value.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString();
     }
 
     private String escape(String value) {

@@ -17,7 +17,9 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,11 +35,21 @@ public class SysRoleService {
     private final SysPermissionMapper sysPermissionMapper;
 
     public List<RoleVO> listRoles() {
-        return sysRoleMapper.selectList(new LambdaQueryWrapper<SysRole>()
-                        .orderByAsc(SysRole::getSort)
-                        .orderByAsc(SysRole::getId))
+        List<SysRole> roles = sysRoleMapper.selectList(new LambdaQueryWrapper<SysRole>()
+                .orderByAsc(SysRole::getSort)
+                .orderByAsc(SysRole::getId));
+        if (roles.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // 一次性取全量关联再分组，避免角色列表 N+1 查询（角色×权限规模很小）
+        Map<Long, List<Long>> permissionMap = sysRolePermissionMapper
+                .selectList(new LambdaQueryWrapper<SysRolePermission>()
+                        .in(SysRolePermission::getRoleId, roles.stream().map(SysRole::getId).toList()))
                 .stream()
-                .map(this::toVO)
+                .collect(Collectors.groupingBy(SysRolePermission::getRoleId,
+                        Collectors.mapping(SysRolePermission::getPermissionId, Collectors.toList())));
+        return roles.stream()
+                .map(role -> toVO(role, permissionMap.getOrDefault(role.getId(), List.of())))
                 .collect(Collectors.toList());
     }
 
@@ -60,7 +72,7 @@ public class SysRoleService {
         if (request.getPermissionIds() != null) {
             saveRolePermissions(role.getId(), request.getPermissionIds());
         }
-        return toVO(requireById(role.getId()));
+        return toVO(requireById(role.getId()), listPermissionIds(role.getId()));
     }
 
     @Transactional
@@ -119,8 +131,16 @@ public class SysRoleService {
         }
     }
 
-    private RoleVO toVO(SysRole role) {
+    private RoleVO toVO(SysRole role, List<Long> permissionIds) {
         return new RoleVO(role.getId(), role.getCode(), role.getName(), role.getEndType(),
-                role.getBuiltIn(), role.getSort(), role.getDescription());
+                role.getBuiltIn(), role.getSort(), role.getDescription(), permissionIds);
+    }
+
+    private List<Long> listPermissionIds(Long roleId) {
+        return sysRolePermissionMapper.selectList(new LambdaQueryWrapper<SysRolePermission>()
+                        .eq(SysRolePermission::getRoleId, roleId))
+                .stream()
+                .map(SysRolePermission::getPermissionId)
+                .collect(Collectors.toList());
     }
 }

@@ -14,11 +14,14 @@ import com.hwc.agent.mapper.AgentDefinitionMapper;
 import com.hwc.agent.mapper.AgentFlowMapper;
 import com.hwc.agent.mapper.AgentFlowNodeMapper;
 import com.hwc.agent.mapper.AgentToolBindingMapper;
+import com.hwc.agent.service.AgentAdminService;
+import com.hwc.security.audit.AuditLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,6 +43,24 @@ public class AgentAdminController {
     private final AgentToolBindingMapper bindingMapper;
     private final AgentFlowMapper flowMapper;
     private final AgentFlowNodeMapper flowNodeMapper;
+    private final AgentAdminService agentAdminService;
+
+    @Operation(summary = "新增 Agent 定义")
+    @PostMapping("/admin/agent/definitions")
+    @PreAuthorize("hasAuthority('agent:definition:write')")
+    @AuditLog(module = "Agent管理", action = "新增Agent定义", targetType = "agent_definition")
+    public Result<AgentDefinition> createDefinition(@RequestBody AgentDefinition definition) {
+        return Result.ok(agentAdminService.createDefinition(definition));
+    }
+
+    @Operation(summary = "删除 Agent 定义")
+    @DeleteMapping("/admin/agent/definitions/{id}")
+    @PreAuthorize("hasAuthority('agent:definition:write')")
+    @AuditLog(module = "Agent管理", action = "删除Agent定义", targetType = "agent_definition")
+    public Result<Void> deleteDefinition(@PathVariable Long id) {
+        agentAdminService.deleteDefinition(id);
+        return Result.ok();
+    }
 
     @Operation(summary = "Agent 定义分页")
     @GetMapping("/admin/agent/definitions")
@@ -107,6 +128,30 @@ public class AgentAdminController {
         return Result.ok();
     }
 
+    @Operation(summary = "新增协同流程")
+    @PostMapping("/admin/agent/flows")
+    @PreAuthorize("hasAuthority('agent:flow:write')")
+    @AuditLog(module = "Agent管理", action = "新增协同流程", targetType = "agent_flow")
+    public Result<AgentFlow> createFlow(@RequestBody FlowCreateRequest request) {
+        return Result.ok(agentAdminService.createFlow(request.code(), request.name(), request.description()));
+    }
+
+    @Operation(summary = "删除协同流程")
+    @DeleteMapping("/admin/agent/flows/{id}")
+    @PreAuthorize("hasAuthority('agent:flow:write')")
+    @AuditLog(module = "Agent管理", action = "删除协同流程", targetType = "agent_flow")
+    public Result<Void> deleteFlow(@PathVariable Long id) {
+        agentAdminService.deleteFlow(id);
+        return Result.ok();
+    }
+
+    @Operation(summary = "画布聚合读取（流程+节点+Agent概要）")
+    @GetMapping("/admin/agent/flows/{id}/canvas")
+    @PreAuthorize("hasAuthority('agent:flow:read')")
+    public Result<java.util.Map<String, Object>> canvasView(@PathVariable Long id) {
+        return Result.ok(agentAdminService.canvasView(id));
+    }
+
     @Operation(summary = "协同流程分页")
     @GetMapping("/admin/agent/flows")
     @PreAuthorize("hasAuthority('agent:flow:read')")
@@ -138,33 +183,22 @@ public class AgentAdminController {
                 .orderByAsc(AgentFlowNode::getNodeOrder)));
     }
 
-    @Operation(summary = "保存流程（含节点，全量替换）")
+    @Operation(summary = "保存流程（画布数据，全量替换）")
     @PutMapping("/admin/agent/flows/{id}")
     @PreAuthorize("hasAuthority('agent:flow:write')")
-    @Transactional
+    @AuditLog(module = "Agent管理", action = "保存协同流程", targetType = "agent_flow")
     public Result<Void> saveFlow(@PathVariable Long id, @RequestBody FlowSaveRequest request) {
-        AgentFlow existing = flowMapper.selectById(id);
-        if (existing == null) {
-            throw new BizException(CommonErrorCode.NOT_FOUND, "流程不存在");
-        }
-        AgentFlow flow = request.flow();
-        flow.setId(id);
-        flowMapper.updateById(flow);
-
-        flowNodeMapper.delete(new LambdaQueryWrapper<AgentFlowNode>().eq(AgentFlowNode::getFlowId, id));
-        for (AgentFlowNode node : request.nodes()) {
-            node.setId(null);
-            node.setFlowId(id);
-            flowNodeMapper.insert(node);
-        }
+        agentAdminService.saveFlow(id, request.flow(), request.nodes());
         return Result.ok();
     }
 
-    @Operation(summary = "流程发布")
+    @Operation(summary = "流程发布（校验+快照+替换启用）")
     @PutMapping("/admin/agent/flows/{id}/publish")
     @PreAuthorize("hasAuthority('agent:flow:write')")
+    @AuditLog(module = "Agent管理", action = "发布协同流程", targetType = "agent_flow")
     public Result<Void> publish(@PathVariable Long id) {
-        return switchFlowStatus(id, "published");
+        agentAdminService.publishFlow(id);
+        return Result.ok();
     }
 
     @Operation(summary = "流程暂停")
@@ -187,5 +221,8 @@ public class AgentAdminController {
     }
 
     public record FlowSaveRequest(AgentFlow flow, List<AgentFlowNode> nodes) {
+    }
+
+    public record FlowCreateRequest(String code, String name, String description) {
     }
 }

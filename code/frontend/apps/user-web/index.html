@@ -1,11 +1,14 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" translate="no">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 禁止浏览器自动翻译：翻译会把文本节点替换成 <font> 标签，破坏 React 的 DOM 引用，
+         触发 "Failed to execute 'removeChild' on 'Node'"。系统本身为中文，无需翻译。 -->
+    <meta name="google" content="notranslate" />
     <title>设备运维助手 - 用户端</title>
   </head>
-  <body>
+  <body class="notranslate">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

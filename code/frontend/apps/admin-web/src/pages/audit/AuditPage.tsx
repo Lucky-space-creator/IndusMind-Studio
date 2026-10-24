@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Dayjs } from "dayjs";
 import { Auth } from "@hwc/shared-auth";
-import { EmptyState, Panel } from "@hwc/shared-ui";
+import { EmptyState, JsonDiffView, Panel } from "@hwc/shared-ui";
 import { ADMIN_PERM } from "@hwc/shared-types";
 import type { SysAuditLog } from "@hwc/shared-types";
 import * as systemApi from "../../api/system";
@@ -252,20 +252,14 @@ export default function AuditPage() {
                 </pre>
               </div>
             )}
-            {detail.beforeValue && (
+            {(detail.beforeValue || detail.afterValue) && (
               <div>
                 <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  变更前
+                  变更对比
                 </Typography.Text>
-                <pre style={preStyle}>{prettyJson(detail.beforeValue)}</pre>
-              </div>
-            )}
-            {detail.afterValue && (
-              <div>
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  变更后
-                </Typography.Text>
-                <pre style={preStyle}>{prettyJson(detail.afterValue)}</pre>
+                <div style={{ marginTop: 4, padding: 8, background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 4 }}>
+                  <JsonDiffView before={detail.beforeValue} after={detail.afterValue} />
+                </div>
               </div>
             )}
           </div>
@@ -274,18 +268,6 @@ export default function AuditPage() {
     </Panel>
   );
 }
-
-const preStyle: React.CSSProperties = {
-  margin: "4px 0 0",
-  padding: 8,
-  background: "#F8FAFC",
-  border: "1px solid #E2E8F0",
-  borderRadius: 4,
-  fontSize: 12,
-  color: "#334155",
-  whiteSpace: "pre-wrap",
-  wordBreak: "break-all",
-};
 
 function Field({ label, value, monospace }: { label: string; value?: string; monospace?: boolean }) {
   return (
@@ -298,12 +280,4 @@ function Field({ label, value, monospace }: { label: string; value?: string; mon
       </div>
     </div>
   );
-}
-
-function prettyJson(raw: string): string {
-  try {
-    return JSON.stringify(JSON.parse(raw), null, 2);
-  } catch {
-    return raw;
-  }
 }

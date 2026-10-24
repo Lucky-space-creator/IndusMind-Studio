@@ -25,4 +25,4 @@ export type * from "./workorder";
 export type * from "./publish";
 export type * from "./system";
 
-export { ADMIN_PERM, USER_PERM, ALL_PERMISSIONS } from "./permission";
+export { ADMIN_PERM, USER_PERM, ALL_PERMISSIONS, PERMISSION_MODULE_LABEL, PERMISSION_ACTION_LABEL } from "./permission";

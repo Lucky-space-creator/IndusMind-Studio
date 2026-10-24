@@ -5,3 +5,7 @@ export { Auth } from "./Auth";
 export type { AuthProps } from "./Auth";
 export { PermissionProvider } from "./PermissionProvider";
 export type { PermissionProviderProps } from "./PermissionProvider";
+export { refreshProfile, onProfileChanged, resetProfileSyncClock } from "./profile";
+export type { RefreshProfileOptions } from "./profile";
+export { buildPermissionDetails } from "./permission-detail";
+export type { PermissionDictItem } from "./permission-detail";
