@@ -86,14 +86,19 @@ public class DiagnosisServiceImpl implements DiagnosisService {
         }
 
         AgentFlow flow = resolveFlow(flowId);
-        List<AgentFlowNode> nodes = flowNodeMapper.selectList(new LambdaQueryWrapper<AgentFlowNode>()
-                .eq(AgentFlowNode::getFlowId, flow.getId())
-                .orderByAsc(AgentFlowNode::getNodeOrder));
-        if (nodes.isEmpty()) {
-            throw new BizException(CommonErrorCode.PARAM_INVALID, "协同流程未配置节点");
-        }
 
-        DiagnosisRunRequest request = buildRequest(device, datasetId, flow, nodes, anomalies, phenomenon);
+        DiagnosisRunRequest request;
+        if (flow.getPublishedSnapshot() != null && !flow.getPublishedSnapshot().isBlank()) {
+            request = buildRequestFromSnapshot(device, datasetId, flow, anomalies, phenomenon);
+        } else {
+            List<AgentFlowNode> nodes = flowNodeMapper.selectList(new LambdaQueryWrapper<AgentFlowNode>()
+                    .eq(AgentFlowNode::getFlowId, flow.getId())
+                    .orderByAsc(AgentFlowNode::getNodeOrder));
+            if (nodes.isEmpty()) {
+                throw new BizException(CommonErrorCode.PARAM_INVALID, "协同流程未配置节点");
+            }
+            request = buildRequest(device, datasetId, flow, nodes, anomalies, phenomenon);
+        }
 
         AgentRun agentRun = new AgentRun();
         agentRun.setRunType("multi");
@@ -149,6 +154,13 @@ public class DiagnosisServiceImpl implements DiagnosisService {
             AgentToolBinding binding = bindings.get(definition.getId());
             DiagnosisRunRequest.AgentConfig config = new DiagnosisRunRequest.AgentConfig();
             config.setAgentCode(definition.getCode());
+            config.setInstanceKey(node.getInstanceKey() != null && !node.getInstanceKey().isBlank()
+                    ? node.getInstanceKey() : definition.getCode());
+            String baseTemplate = definition.getBaseTemplate();
+            config.setTemplateCode(baseTemplate != null && !baseTemplate.isBlank()
+                    ? baseTemplate : definition.getCode());
+            config.setAgentName(node.getNodeName() != null && !node.getNodeName().isBlank()
+                    ? node.getNodeName() : definition.getName());
             config.setInstruction(definition.getInstruction());
             config.setBoundary(definition.getBoundary());
             config.setOutputFormat(definition.getOutputFormat());
@@ -160,6 +172,55 @@ public class DiagnosisServiceImpl implements DiagnosisService {
             config.setTimeoutSeconds(node.getTimeoutSeconds());
             agentConfigs.add(config);
         }
+        request.setAgents(agentConfigs);
+        return request;
+    }
+
+    private DiagnosisRunRequest buildRequestFromSnapshot(DevInfo device, Long datasetId, AgentFlow flow,
+                                                          List<DataAnomaly> anomalies, String phenomenon) {
+        List<DiagnosisRunRequest.AgentConfig> agentConfigs = new ArrayList<>();
+        try {
+            com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(flow.getPublishedSnapshot());
+            for (com.fasterxml.jackson.databind.JsonNode agent : root.path("agents")) {
+                DiagnosisRunRequest.AgentConfig config = new DiagnosisRunRequest.AgentConfig();
+                config.setAgentCode(agent.path("agentCode").asText(null));
+                config.setInstanceKey(agent.path("instanceKey").asText(null));
+                config.setTemplateCode(agent.path("templateCode").asText(null));
+                config.setAgentName(agent.path("agentName").asText(null));
+                config.setInstruction(agent.path("instruction").asText(null));
+                config.setBoundary(agent.path("boundary").asText(null));
+                config.setOutputFormat(agent.path("outputFormat").asText(null));
+                config.setTriggerCondition(agent.path("triggerCondition").asText(null));
+                config.setTimeoutSeconds(agent.path("timeoutSeconds").asInt(120));
+                Long agentId = agent.path("agentId").asLong();
+                AgentToolBinding binding = bindingMapper.selectOne(new LambdaQueryWrapper<AgentToolBinding>()
+                        .eq(AgentToolBinding::getAgentId, agentId));
+                config.setKbIds(resolveKbIds(binding, device.getTypeId()));
+                config.setMatchStrictness(binding != null && binding.getMatchStrictness() != null
+                        ? binding.getMatchStrictness() : "medium");
+                config.setTools(parseStringList(binding != null ? binding.getTools() : null));
+                agentConfigs.add(config);
+            }
+        } catch (Exception e) {
+            log.warn("流程快照解析失败，回退节点表 flowId={} err={}", flow.getId(), e.getMessage());
+            List<AgentFlowNode> nodes = flowNodeMapper.selectList(new LambdaQueryWrapper<AgentFlowNode>()
+                    .eq(AgentFlowNode::getFlowId, flow.getId())
+                    .orderByAsc(AgentFlowNode::getNodeOrder));
+            return buildRequest(device, datasetId, flow, nodes, anomalies, phenomenon);
+        }
+        if (agentConfigs.isEmpty()) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID, "流程发布快照为空，请重新发布流程");
+        }
+
+        Map<Long, DevMetric> metrics = deviceQueryFacade.getMetricMap(
+                anomalies.stream().map(DataAnomaly::getMetricId).filter(id -> id != null).distinct().toList());
+        DiagnosisRunRequest request = new DiagnosisRunRequest();
+        request.setDeviceId(device.getId());
+        request.setDeviceName(device.getName());
+        request.setDatasetId(datasetId);
+        request.setFlowId(flow.getId());
+        request.setPhenomenon(phenomenon);
+        request.setAnomalies(anomalies.stream().map(item -> toAnomalyItem(item, metrics)).toList());
         request.setAgents(agentConfigs);
         return request;
     }
@@ -231,7 +292,7 @@ public class DiagnosisServiceImpl implements DiagnosisService {
                     .orderByAsc(AgentFlow::getId)
                     .last("LIMIT 1"));
             if (flow == null) {
-                throw new BizException(CommonErrorCode.PARAM_INVALID, "未找到可用的预设协同流程");
+                throw new BizException(CommonErrorCode.PARAM_INVALID, "暂无可用诊断流程，请联系管理员");
             }
         }
         if (!"published".equals(flow.getStatus())) {

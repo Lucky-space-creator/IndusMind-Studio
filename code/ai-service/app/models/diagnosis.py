@@ -19,6 +19,9 @@ class AnomalyItem(CamelModel):
 
 class AgentConfig(CamelModel):
     agent_code: str = Field(alias="agentCode")
+    instance_key: str | None = Field(default=None, alias="instanceKey")
+    template_code: str | None = Field(default=None, alias="templateCode")
+    agent_name: str | None = Field(default=None, alias="agentName")
     instruction: str | None = None
     boundary: str | None = None
     output_format: str | None = Field(default=None, alias="outputFormat")
@@ -42,6 +45,7 @@ class DiagnosisRunRequest(CamelModel):
 class StepResult(CamelModel):
     step_order: int = Field(alias="stepOrder")
     agent_code: str = Field(alias="agentCode")
+    instance_key: str | None = Field(default=None, alias="instanceKey")
     agent_name: str | None = Field(default=None, alias="agentName")
     status: str
     summary: str | None = None

@@ -33,3 +33,8 @@ UPDATE `agent_flow_node` SET `position_x` = 80, `position_y` = 80 + (`node_order
 -- 6. 执行步骤：实例维度追溯
 ALTER TABLE `agent_step`
   ADD COLUMN `instance_key` VARCHAR(64) NULL DEFAULT NULL COMMENT '实例键(多实例区分归属)' AFTER `agent_id`;
+-- 7. 存量节点 upstream 链式回填（node_order 顺序串联，保证旧流程可通过画布校验与发布）
+UPDATE `agent_flow_node` n
+JOIN `agent_flow_node` p ON p.`flow_id` = n.`flow_id` AND p.`node_order` = n.`node_order` - 1 AND p.`deleted` = 0
+SET n.`upstream_instance_key` = p.`instance_key`
+WHERE n.`upstream_instance_key` IS NULL AND n.`node_order` > 1;

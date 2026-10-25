@@ -18,6 +18,18 @@ def build_nodes() -> dict[str, AgentNode]:
     return {code: cls() for code, cls in NODE_CLASSES.items()}
 
 
+def create_node_instance(template_code: str, instance_key: str, display_name: str | None = None) -> AgentNode:
+    if template_code not in NODE_CLASSES:
+        from app.core.errors import AiServiceError
+
+        raise AiServiceError(f"未知 Agent 模板: {template_code}")
+    node = NODE_CLASSES[template_code]()
+    node.code = instance_key
+    node.name = display_name or AGENT_NAMES.get(template_code, instance_key)
+    node.template_code = template_code
+    return node
+
+
 __all__ = [
     "AGENT_NAMES",
     "AgentNode",
@@ -29,4 +41,5 @@ __all__ = [
     "WorkOrderNode",
     "NODE_CLASSES",
     "build_nodes",
+    "create_node_instance",
 ]

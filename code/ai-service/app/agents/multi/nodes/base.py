@@ -30,11 +30,13 @@ class NodeResult:
 class AgentNode:
     code: str = ""
     name: str = ""
+    template_code: str = ""
 
     def __init__(self):
         if not self.code:
             self.code = self.__class__.__name__.lower()
         self.name = self.name or AGENT_NAMES.get(self.code, self.code)
+        self.template_code = self.template_code or self.code
 
     def run(self, state: dict) -> NodeResult:
         raise NotImplementedError

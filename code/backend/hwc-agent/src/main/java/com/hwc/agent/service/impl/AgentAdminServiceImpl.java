@@ -77,6 +77,9 @@ public class AgentAdminServiceImpl implements AgentAdminService {
         requireText(definition.getOutputFormat(), "输出格式");
         definition.setId(null);
         definition.setStatus(1);
+        if (definition.getDomain() == null) {
+            definition.setDomain("");
+        }
         Integer maxSort = definitionMapper.selectList(new LambdaQueryWrapper<AgentDefinition>()
                         .select(AgentDefinition::getSort)
                         .orderByDesc(AgentDefinition::getSort)
@@ -401,7 +404,7 @@ public class AgentAdminServiceImpl implements AgentAdminService {
                 continue;
             }
             ordered.add(cur);
-            List<AgentFlowNode> kids = children.getOrDefault(cur.getInstanceKey(), List.of());
+            List<AgentFlowNode> kids = new ArrayList<>(children.getOrDefault(cur.getInstanceKey(), List.of()));
             kids.sort(java.util.Comparator.comparing(
                     n -> n.getSortSeq() == null ? Integer.MAX_VALUE : n.getSortSeq(),
                     java.util.Comparator.reverseOrder()));

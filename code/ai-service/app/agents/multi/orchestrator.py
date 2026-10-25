@@ -9,7 +9,7 @@ from concurrent.futures import TimeoutError as FuturesTimeoutError
 from typing import Annotated, TypedDict
 
 from app.agents.multi.dsl import evaluate
-from app.agents.multi.nodes import build_nodes
+from app.agents.multi.nodes import build_nodes, create_node_instance
 from app.core.errors import AiServiceError
 from app.core.logging import get_logger
 from app.models.common import Citation
@@ -43,6 +43,7 @@ class DiagnosisState(TypedDict, total=False):
     trace_id: str
     anomalies: list
     configs: dict
+    node_instances: dict
     active_codes: list
     agent_outputs: Annotated[dict, _merge_dicts]
     steps: Annotated[list, operator.add]
@@ -77,6 +78,7 @@ def _trigger_of(state: dict, code: str) -> str:
 def _step(node, *, status: str, summary: str, output, citations, duration_ms: int) -> dict:
     return {
         "agentCode": node.code,
+        "instanceKey": node.code,
         "agentName": node.name,
         "status": status,
         "summary": summary,
@@ -147,7 +149,10 @@ def _timeout_output(code: str, state: dict) -> dict:
 
 
 def _run_agent_node(state: dict, code: str) -> dict:
-    node = _NODES[code]
+    instances = state.get("node_instances") or {}
+    node = instances.get(code) or _NODES.get(code)
+    if node is None:
+        raise AiServiceError(f"未知 Agent 实例: {code}")
     started = time.perf_counter()
     trigger = _trigger_of(state, code)
     if trigger:
@@ -213,7 +218,7 @@ def _run_agent_node(state: dict, code: str) -> dict:
             return _failed_step(node, code, started, f"节点执行异常：{exc}")
     if timed_out:
         elapsed = int((time.perf_counter() - started) * 1000)
-        output = _timeout_output(code, state)
+        output = _timeout_output(node.template_code, state)
         update = {
             "steps": [
                 _step(
@@ -227,7 +232,7 @@ def _run_agent_node(state: dict, code: str) -> dict:
             ],
             "agent_outputs": {code: output},
         }
-        if code == "monitor":
+        if node.template_code == "monitor":
             update["monitor_status"] = "abnormal"
         return update
     elapsed = int((time.perf_counter() - started) * 1000)
@@ -245,7 +250,7 @@ def _run_agent_node(state: dict, code: str) -> dict:
         "agent_outputs": {code: result.output},
         "citations": result.citations,
     }
-    if code == "monitor":
+    if node.template_code == "monitor":
         update["monitor_status"] = result.output.get("deviceStatus", "normal")
     return update
 
@@ -268,7 +273,7 @@ def step_safety(state: DiagnosisState) -> dict:
 
 def step_work_order(state: DiagnosisState) -> dict:
     if not state.get("work_order_allowed", True):
-        node = _NODES["work_order"]
+        node = (state.get("node_instances") or {}).get("work_order") or _NODES["work_order"]
         step = _step(
             node,
             status="skipped",
@@ -309,12 +314,26 @@ def route_after_monitor(state: DiagnosisState) -> str:
 
 def finalize(state: DiagnosisState) -> dict:
     outputs = state.get("agent_outputs") or {}
-    risk_level = state.get("risk_level") or _rank_to_level(
-        max(
-            _rank((outputs.get("monitor") or {}).get("severity")),
-            _rank((outputs.get("safety") or {}).get("riskLevel")),
-        )
-    )
+    instances = state.get("node_instances") or {}
+    risk_level = state.get("risk_level")
+    if not risk_level:
+        rank = 0
+        if instances:
+            for key, node in instances.items():
+                out = outputs.get(key) or {}
+                template = node.template_code
+                if template == "monitor":
+                    rank = max(rank, _rank(out.get("severity")))
+                elif template == "safety":
+                    rank = max(rank, _rank(out.get("riskLevel")))
+                elif template == "spare_cost":
+                    rank = max(rank, _rank(out.get("costLevel")))
+        else:
+            rank = max(
+                _rank((outputs.get("monitor") or {}).get("severity")),
+                _rank((outputs.get("safety") or {}).get("riskLevel")),
+            )
+        risk_level = _rank_to_level(rank)
     conclusion = _build_conclusion(state, outputs)
     return {"conclusion": conclusion, "risk_level": risk_level}
 
@@ -333,28 +352,38 @@ def _dedup_citations(citations: list) -> list[Citation]:
 
 
 def _build_conclusion(state: dict, outputs: dict) -> str:
-    monitor = outputs.get("monitor") or {}
-    if monitor.get("deviceStatus") == "normal":
+    instances = state.get("node_instances") or {}
+
+    def outputs_of_template(template: str) -> list[dict]:
+        if instances:
+            return [outputs.get(key) or {} for key, node in instances.items()
+                    if node.template_code == template]
+        value = outputs.get(template)
+        return [value] if isinstance(value, dict) else []
+
+    monitors = outputs_of_template("monitor")
+    if monitors and monitors[0].get("deviceStatus") == "normal":
         return "监测确认设备状态正常，本次无需进入根因诊断与工单流程。"
     parts: list[str] = []
-    if monitor.get("summary"):
-        parts.append(str(monitor["summary"]))
-    root_cause = outputs.get("root_cause") or {}
-    if root_cause.get("topCause"):
-        parts.append(f"候选根因为「{root_cause['topCause']}」")
-    spare = outputs.get("spare_cost") or {}
-    if spare.get("spareParts"):
-        names = [p.get("partName") for p in spare["spareParts"] if isinstance(p, dict) and p.get("partName")]
-        if names:
-            parts.append("建议备件：" + "、".join(names))
-    safety = outputs.get("safety") or {}
-    if safety.get("checkResult") == "fail":
-        parts.append("安全核查未通过，已否决工单生成")
-    elif safety.get("checkResult") == "pass":
-        parts.append("安全核查通过")
-    work_order = outputs.get("work_order") or {}
-    if work_order.get("orderTitle"):
-        parts.append(f"已生成工单「{work_order['orderTitle']}」，优先级 {work_order.get('priority')}")
+    for monitor in monitors:
+        if monitor.get("summary"):
+            parts.append(str(monitor["summary"]))
+    for root_cause in outputs_of_template("root_cause"):
+        if root_cause.get("topCause"):
+            parts.append(f"候选根因为「{root_cause['topCause']}」")
+    for spare in outputs_of_template("spare_cost"):
+        if spare.get("spareParts"):
+            names = [p.get("partName") for p in spare["spareParts"] if isinstance(p, dict) and p.get("partName")]
+            if names:
+                parts.append("建议备件：" + "、".join(names))
+    for safety in outputs_of_template("safety"):
+        if safety.get("checkResult") == "fail":
+            parts.append("安全核查未通过，已否决工单生成")
+        elif safety.get("checkResult") == "pass":
+            parts.append("安全核查通过")
+    for work_order in outputs_of_template("work_order"):
+        if work_order.get("orderTitle"):
+            parts.append(f"已生成工单「{work_order['orderTitle']}」，优先级 {work_order.get('priority')}")
     return "；".join(parts) + "。" if parts else "诊断完成。"
 
 
@@ -368,17 +397,26 @@ def active_codes_of(state: dict) -> list[str]:
 
 
 def initial_state(request: DiagnosisRunRequest, trace_id: str) -> dict:
+    configs: dict = {}
+    node_instances: dict = {}
+    for cfg in request.agents or []:
+        key = cfg.instance_key or cfg.agent_code
+        configs[key] = cfg
+        node_instances[key] = create_node_instance(
+            cfg.template_code or cfg.agent_code, key, cfg.agent_name
+        )
     state = {
         "request": request,
         "run_id": uuid.uuid4().hex,
         "trace_id": trace_id,
         "anomalies": list(request.anomalies or []),
-        "configs": {cfg.agent_code: cfg for cfg in (request.agents or [])},
+        "configs": configs,
+        "node_instances": node_instances,
         "agent_outputs": {},
         "steps": [],
         "citations": [],
     }
-    state["active_codes"] = active_codes_of(state)
+    state["active_codes"] = list(configs.keys()) if configs else active_codes_of(state)
     return state
 
 
@@ -446,11 +484,21 @@ def _apply(state: dict, update: dict | None) -> None:
             state[key] = value
 
 
+def _invoke_flow(state: dict) -> dict:
+    for key in list(state.get("active_codes") or []):
+        _apply(state, _run_agent_node(state, key))
+    _apply(state, finalize(state))
+    return state
+
+
 def run_diagnosis(request: DiagnosisRunRequest, trace_id: str = "") -> DiagnosisRunResponse:
     state = initial_state(request, trace_id)
-    final_state = _invoke_langgraph(state)
-    if final_state is None:
-        final_state = _invoke_sequential(state)
+    if request.agents:
+        final_state = _invoke_flow(state)
+    else:
+        final_state = _invoke_langgraph(state)
+        if final_state is None:
+            final_state = _invoke_sequential(state)
 
     ordered = _order_steps(final_state.get("steps") or [])
     citations = _dedup_citations(final_state.get("citations") or [])
@@ -465,19 +513,14 @@ def run_diagnosis(request: DiagnosisRunRequest, trace_id: str = "") -> Diagnosis
 
 
 def _order_steps(steps_raw: list[dict]) -> list[StepResult]:
-    by_agent: dict[str, dict] = {}
-    for step in steps_raw:
-        by_agent.setdefault(step["agentCode"], step)
     ordered: list[StepResult] = []
-    for order, code in enumerate(AGENT_ORDER, start=1):
-        step = by_agent.get(code)
-        if not step:
-            continue
+    for order, step in enumerate(steps_raw, start=1):
         ordered.append(
             StepResult(
                 stepOrder=order,
-                agentCode=code,
-                agentName=AGENT_NAMES.get(code),
+                agentCode=step["agentCode"],
+                instanceKey=step.get("instanceKey"),
+                agentName=step.get("agentName"),
                 status=step["status"],
                 summary=step.get("summary"),
                 output=step.get("output"),

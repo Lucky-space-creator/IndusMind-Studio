@@ -37,6 +37,9 @@ public class DiagnosisRunRequest {
     public static class AgentConfig {
 
         private String agentCode;
+        private String instanceKey;
+        private String templateCode;
+        private String agentName;
         private String instruction;
         private String boundary;
         private String outputFormat;
