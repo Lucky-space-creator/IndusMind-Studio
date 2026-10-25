@@ -1,6 +1,8 @@
 import { ADMIN_PERM } from "@hwc/shared-types";
 import AdminLayout from "../layouts/AdminLayout";
+import React, { Suspense } from "react";
 import AgentPage from "../pages/agent/AgentPage";
+const FlowCanvasPage = React.lazy(() => import("../pages/agent/FlowCanvasPage"));
 import AuditPage from "../pages/audit/AuditPage";
 import DataPage from "../pages/data/DataPage";
 import DevicePage from "../pages/device/DevicePage";
@@ -71,6 +73,16 @@ const routes = [
         element: (
           <RequirePermission codes={[ADMIN_PERM.AGENT_DEFINITION_READ, ADMIN_PERM.AGENT_FLOW_READ]}>
             <AgentPage />
+          </RequirePermission>
+        ),
+      },
+      {
+        path: "agent/flows/:id/canvas",
+        element: (
+          <RequirePermission codes={[ADMIN_PERM.AGENT_FLOW_READ]}>
+            <Suspense fallback={<div style={{ padding: 24 }}>画布加载中…</div>}>
+              <FlowCanvasPage />
+            </Suspense>
           </RequirePermission>
         ),
       },

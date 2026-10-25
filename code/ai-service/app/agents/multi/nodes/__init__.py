@@ -20,9 +20,9 @@ def build_nodes() -> dict[str, AgentNode]:
 
 def create_node_instance(template_code: str, instance_key: str, display_name: str | None = None) -> AgentNode:
     if template_code not in NODE_CLASSES:
-        from app.core.errors import AiServiceError
+        from app.core.errors import ErrorCode, bad_request
 
-        raise AiServiceError(f"未知 Agent 模板: {template_code}")
+        raise bad_request(f"未知 Agent 模板: {template_code}")
     node = NODE_CLASSES[template_code]()
     node.code = instance_key
     node.name = display_name or AGENT_NAMES.get(template_code, instance_key)

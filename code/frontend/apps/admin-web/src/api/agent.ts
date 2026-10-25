@@ -1,11 +1,14 @@
 import { api } from "@hwc/shared-api";
 import type {
   AgentDefinition,
+  AgentDefinitionCreateRequest,
   AgentFlow,
+  AgentFlowCreateRequest,
   AgentFlowNode,
   AgentRun,
   AgentStep,
   AgentToolBinding,
+  CanvasView,
   DiagnosisRecord,
   PageResult,
 } from "@hwc/shared-types";
@@ -13,6 +16,11 @@ import type {
 /* ===== Agent 定义 ===== */
 export const pageDefinitions = (params: { current?: number; size?: number; keyword?: string; domain?: string }) =>
   api.get<PageResult<AgentDefinition>>("/api/admin/agent/definitions", params);
+
+export const createDefinition = (body: AgentDefinitionCreateRequest) =>
+  api.post<AgentDefinition>("/api/admin/agent/definitions", body);
+
+export const deleteDefinition = (id: number) => api.delete<void>(`/api/admin/agent/definitions/${id}`);
 
 export const updateDefinition = (id: number, body: Partial<AgentDefinition>) =>
   api.put<void>(`/api/admin/agent/definitions/${id}`, body);
@@ -46,6 +54,13 @@ export const saveFlow = (id: number, body: FlowSaveRequest) =>
 export const publishFlow = (id: number) => api.put<void>(`/api/admin/agent/flows/${id}/publish`);
 
 export const pauseFlow = (id: number) => api.put<void>(`/api/admin/agent/flows/${id}/pause`);
+
+export const createFlow = (body: AgentFlowCreateRequest) =>
+  api.post<AgentFlow>("/api/admin/agent/flows", body);
+
+export const deleteFlow = (id: number) => api.delete<void>(`/api/admin/agent/flows/${id}`);
+
+export const getFlowCanvas = (id: number) => api.get<CanvasView>(`/api/admin/agent/flows/${id}/canvas`);
 
 /* ===== 执行记录 ===== */
 export const pageRuns = (params: { current?: number; size?: number }) =>

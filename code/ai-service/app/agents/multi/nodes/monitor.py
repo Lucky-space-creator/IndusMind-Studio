@@ -66,7 +66,16 @@ class MonitorNode(AgentNode):
                 },
             ]
             text = get_llm().chat(messages, temperature=0.1)
-            return text or deterministic
+            if not text:
+                return deterministic
+            import json as _json
+            try:
+                parsed = _json.loads(text.strip())
+                if isinstance(parsed, dict) and isinstance(parsed.get("summary"), str):
+                    return parsed["summary"]
+            except (ValueError, TypeError):
+                pass
+            return text.strip()
         except Exception as exc:
             log.warning("[monitor] 摘要生成失败，使用规则摘要：%s", exc)
             return deterministic

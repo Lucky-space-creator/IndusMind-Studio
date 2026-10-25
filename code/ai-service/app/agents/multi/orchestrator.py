@@ -351,6 +351,20 @@ def _dedup_citations(citations: list) -> list[Citation]:
     return result
 
 
+def _plain_summary(raw) -> str:
+    text = str(raw).strip()
+    if text.startswith("{"):
+        try:
+            parsed = json.loads(text)
+            if isinstance(parsed, dict):
+                inner = parsed.get("summary")
+                if isinstance(inner, str) and inner.strip():
+                    return inner.strip()
+        except (ValueError, TypeError):
+            pass
+    return text
+
+
 def _build_conclusion(state: dict, outputs: dict) -> str:
     instances = state.get("node_instances") or {}
 
@@ -367,7 +381,7 @@ def _build_conclusion(state: dict, outputs: dict) -> str:
     parts: list[str] = []
     for monitor in monitors:
         if monitor.get("summary"):
-            parts.append(str(monitor["summary"]))
+            parts.append(_plain_summary(monitor["summary"]))
     for root_cause in outputs_of_template("root_cause"):
         if root_cause.get("topCause"):
             parts.append(f"候选根因为「{root_cause['topCause']}」")

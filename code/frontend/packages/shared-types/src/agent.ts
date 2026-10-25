@@ -15,6 +15,8 @@ export interface AgentDefinition {
   code: string;
   name: string;
   domain: string;
+  /** 派生基础模板：monitor/root_cause/spare_cost/safety/work_order */
+  baseTemplate: string;
   responsibility: string;
   instruction: string;
   boundary: string;
@@ -45,6 +47,49 @@ export interface AgentFlow {
   status: string;
   isPreset: number;
   description?: string;
+  /** 发布快照 JSON（草稿-发布分离） */
+  publishedSnapshot?: string;
+}
+
+export interface AgentSummary {
+  id: number;
+  code: string;
+  name: string;
+  baseTemplate: string;
+  /** 1/0 */
+  status: number;
+}
+
+/** 画布聚合视图（GET /admin/agent/flows/{id}/canvas） */
+export interface CanvasView {
+  flow: AgentFlow;
+  nodes: AgentFlowNode[];
+  agentSnapshots: AgentSummary[];
+}
+
+export interface AgentDefinitionCreateRequest {
+  baseTemplate: string;
+  code: string;
+  name: string;
+  domain?: string;
+  responsibility: string;
+  instruction: string;
+  boundary: string;
+  outputFormat: string;
+  params?: string;
+  modelConfig?: string;
+}
+
+export interface AgentFlowCreateRequest {
+  code: string;
+  name: string;
+  description?: string;
+}
+
+export interface FlowValidationError {
+  nodeInstanceKey: string;
+  field: string;
+  message: string;
 }
 
 export interface AgentFlowNode {
@@ -53,8 +98,15 @@ export interface AgentFlowNode {
   nodeOrder: number;
   nodeName: string;
   agentId: number;
+  /** 流程内实例键（默认=agent code，重复加 _2 后缀） */
+  instanceKey?: string;
+  /** 上游节点实例键（NULL=起点） */
+  upstreamInstanceKey?: string;
   triggerCondition?: string;
   timeoutSeconds?: number;
+  positionX?: number;
+  positionY?: number;
+  sortSeq?: number;
   remark?: string;
 }
 
