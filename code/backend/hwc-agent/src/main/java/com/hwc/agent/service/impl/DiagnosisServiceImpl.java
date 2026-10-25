@@ -86,6 +86,25 @@ public class DiagnosisServiceImpl implements DiagnosisService {
         }
 
         AgentFlow flow = resolveFlow(flowId);
+        Map<String, Long> instanceAgentMap = new HashMap<>();
+        if (flow.getPublishedSnapshot() != null && !flow.getPublishedSnapshot().isBlank()) {
+            try {
+                com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(flow.getPublishedSnapshot());
+                for (com.fasterxml.jackson.databind.JsonNode agent : root.path("agents")) {
+                    instanceAgentMap.put(agent.path("instanceKey").asText(), agent.path("agentId").asLong());
+                }
+            } catch (Exception e) {
+                log.warn("快照 instanceKey 映射解析失败: {}", e.getMessage());
+            }
+        } else {
+            flowNodeMapper.selectList(new LambdaQueryWrapper<AgentFlowNode>()
+                            .eq(AgentFlowNode::getFlowId, flow.getId()))
+                    .forEach(n -> {
+                        if (n.getInstanceKey() != null && n.getAgentId() != null) {
+                            instanceAgentMap.put(n.getInstanceKey(), n.getAgentId());
+                        }
+                    });
+        }
 
         DiagnosisRunRequest request;
         if (flow.getPublishedSnapshot() != null && !flow.getPublishedSnapshot().isBlank()) {
@@ -114,7 +133,7 @@ public class DiagnosisServiceImpl implements DiagnosisService {
 
         try {
             DiagnosisRunResponse response = agentClient.runDiagnosis(request);
-            persistResult(agentRun, response, deviceId, datasetId);
+            persistResult(agentRun, response, deviceId, datasetId, instanceAgentMap);
             response.setRunId(String.valueOf(agentRun.getId()));
             return response;
         } catch (BizException e) {
@@ -226,7 +245,7 @@ public class DiagnosisServiceImpl implements DiagnosisService {
     }
 
     private void persistResult(AgentRun agentRun, DiagnosisRunResponse response,
-                               Long deviceId, Long datasetId) {
+                               Long deviceId, Long datasetId, Map<String, Long> instanceAgentMap) {
         agentRun.setStatus("success");
         agentRun.setEndedAt(LocalDateTime.now());
         agentRun.setConclusion(response.getConclusion());
@@ -240,7 +259,12 @@ public class DiagnosisServiceImpl implements DiagnosisService {
             AgentStep agentStep = new AgentStep();
             agentStep.setRunId(agentRun.getId());
             agentStep.setStepOrder(step.getStepOrder());
-            agentStep.setAgentId(codeToId.get(step.getAgentCode()));
+            Long stepAgentId = instanceAgentMap.get(step.getAgentCode());
+            if (stepAgentId == null) {
+                stepAgentId = codeToId.get(step.getAgentCode());
+            }
+            agentStep.setAgentId(stepAgentId != null ? stepAgentId : 0L);
+            agentStep.setInstanceKey(step.getAgentCode());
             agentStep.setPhase(step.getAgentCode());
             agentStep.setSummary(step.getSummary());
             agentStep.setDetail(step.getOutput());
