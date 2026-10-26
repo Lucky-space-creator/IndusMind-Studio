@@ -67,6 +67,43 @@ public class PublishServiceImpl implements PublishService {
 
     @Override
     @Transactional
+    public PubService updateService(Long serviceId, PubService patch) {
+        PubService service = requireService(serviceId);
+
+        // 服务编码是对外调用地址 /api/open/v1/{code}/invoke 的一部分，改动会让所有调用方失效
+        if (patch.getCode() != null && !patch.getCode().equals(service.getCode())) {
+            throw new BizException(CommonErrorCode.PARAM_INVALID,
+                    "服务编码不可修改（对外调用地址依赖该编码）");
+        }
+        if (patch.getName() != null) {
+            if (patch.getName().isBlank()) {
+                throw new BizException(CommonErrorCode.PARAM_INVALID, "服务名称不能为空");
+            }
+            service.setName(patch.getName().trim());
+        }
+        if (patch.getDescription() != null) {
+            service.setDescription(patch.getDescription());
+        }
+        // 开放 API 调用时实时读取 flowId（非版本快照），在线服务换流程会立即改变运行行为，
+        // 导致当前版本快照与实际不符，故要求先暂停再更换。
+        if (patch.getFlowId() != null && !patch.getFlowId().equals(service.getFlowId())) {
+            if ("online".equals(service.getStatus())) {
+                throw new BizException(CommonErrorCode.PARAM_INVALID,
+                        "服务上线中不可更换关联流程，请先暂停服务");
+            }
+            AgentFlow flow = diagnosisQueryFacade.getFlow(patch.getFlowId());
+            if (flow == null) {
+                throw new BizException(CommonErrorCode.NOT_FOUND, "协同流程不存在");
+            }
+            service.setFlowId(patch.getFlowId());
+        }
+        serviceMapper.updateById(service);
+        log.info("发布服务已更新: id={}, name={}, flowId={}", service.getId(), service.getName(), service.getFlowId());
+        return service;
+    }
+
+    @Override
+    @Transactional
     public CredentialIssue publish(Long serviceId, String changelog) {
         PubService service = requireService(serviceId);
         AgentFlow flow = diagnosisQueryFacade.getFlow(service.getFlowId());

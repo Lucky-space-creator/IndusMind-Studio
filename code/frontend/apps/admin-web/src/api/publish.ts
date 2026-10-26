@@ -14,6 +14,10 @@ export const pageServices = (params: { current?: number; size?: number; keyword?
 export const createService = (body: Partial<PubService>) =>
   api.post<PubService>("/api/admin/publish/services", body);
 
+/** 修改已部署服务：仅名称/说明/关联流程可改，服务编码与状态由发布流程托管 */
+export const updateService = (id: number, body: Partial<PubService>) =>
+  api.put<PubService>(`/api/admin/publish/services/${id}`, body);
+
 export const publishService = (id: number, changelog?: string) =>
   api.put<CredentialIssue>(`/api/admin/publish/services/${id}/publish`, changelog ? { changelog } : undefined);
 

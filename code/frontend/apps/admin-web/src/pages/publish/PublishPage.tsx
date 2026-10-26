@@ -1,4 +1,4 @@
-import { CloudUploadOutlined, KeyOutlined, PauseCircleOutlined, PlayCircleOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { CloudUploadOutlined, EditOutlined, KeyOutlined, PauseCircleOutlined, PlayCircleOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { App, Button, Descriptions, Drawer, Form, Input, Modal, Popconfirm, Select, Space, Statistic, Table, Tabs, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
@@ -18,9 +18,11 @@ export default function PublishPage() {
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState<string | undefined>();
   const [createOpen, setCreateOpen] = useState(false);
+  const [editing, setEditing] = useState<PubService | null>(null);
   const [detail, setDetail] = useState<PubService | null>(null);
   const [issued, setIssued] = useState<{ title: string; accessKey: string; secretKey: string } | null>(null);
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "services", page, keyword, status],
@@ -37,6 +39,16 @@ export default function PublishPage() {
     onSuccess: () => {
       message.success("服务已创建（默认暂停状态，上线后签发凭证）");
       setCreateOpen(false);
+      qc.invalidateQueries({ queryKey: ["admin", "services"] });
+    },
+  });
+
+  const update = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Partial<PubService> }) =>
+      publishApi.updateService(id, body),
+    onSuccess: () => {
+      message.success("服务配置已更新");
+      setEditing(null);
       qc.invalidateQueries({ queryKey: ["admin", "services"] });
     },
   });
@@ -80,12 +92,29 @@ export default function PublishPage() {
     },
     {
       title: "操作",
-      width: 240,
+      width: 300,
       render: (_, record) => (
         <Space size={0} wrap>
           <Button type="link" size="small" onClick={() => setDetail(record)}>
             详情
           </Button>
+          <Auth code={ADMIN_PERM.PUBLISH_SERVICE_WRITE}>
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => {
+                editForm.setFieldsValue({
+                  name: record.name,
+                  flowId: record.flowId,
+                  description: record.description,
+                });
+                setEditing(record);
+              }}
+            >
+              编辑
+            </Button>
+          </Auth>
           <Auth code={ADMIN_PERM.PUBLISH_SERVICE_PUBLISH}>
             {record.status !== "online" ? (
               <Popconfirm title="上线将签发凭证并生成版本快照，确认？" onConfirm={() => publish.mutate(record.id)}>
@@ -200,6 +229,52 @@ export default function PublishPage() {
           </Form.Item>
           <Form.Item name="flowId" label="绑定协同流程" rules={[{ required: true, message: "请选择协同流程" }]}>
             <Select
+              options={(flows?.records ?? []).map((f) => ({ value: f.id, label: `${f.name}（v${f.version}）` }))}
+            />
+          </Form.Item>
+          <Form.Item name="description" label="说明">
+            <Input.TextArea rows={2} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="修改发布服务"
+        open={editing != null}
+        onCancel={() => setEditing(null)}
+        onOk={() => editForm.submit()}
+        confirmLoading={update.isPending}
+        okText="保存"
+        forceRender
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={(v) => editing && update.mutate({ id: editing.id, body: v })}
+        >
+          <Form.Item label="服务编码">
+            <div>
+              <Input value={editing?.code} disabled />
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                对外调用地址为 /api/open/v1/{editing?.code}/invoke，编码不可修改
+              </Typography.Text>
+            </div>
+          </Form.Item>
+          <Form.Item name="name" label="服务名称" rules={[{ required: true, message: "请输入服务名称" }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="flowId"
+            label="绑定协同流程"
+            rules={[{ required: true, message: "请选择协同流程" }]}
+            extra={
+              editing?.status === "online"
+                ? "服务上线中，不可更换关联流程；如需更换请先暂停服务"
+                : undefined
+            }
+          >
+            <Select
+              disabled={editing?.status === "online"}
               options={(flows?.records ?? []).map((f) => ({ value: f.id, label: `${f.name}（v${f.version}）` }))}
             />
           </Form.Item>

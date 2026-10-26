@@ -64,6 +64,13 @@ public class PublishController {
         return Result.ok(publishService.createService(service));
     }
 
+    @Operation(summary = "修改发布服务（名称/说明/关联流程）")
+    @PutMapping("/admin/publish/services/{id}")
+    @PreAuthorize("hasAuthority('publish:service:write')")
+    public Result<PubService> update(@PathVariable Long id, @RequestBody PubService patch) {
+        return Result.ok(publishService.updateService(id, patch));
+    }
+
     @Operation(summary = "服务上线（签发凭证并生成版本）")
     @PutMapping("/admin/publish/services/{id}/publish")
     @PreAuthorize("hasAuthority('publish:service:publish')")

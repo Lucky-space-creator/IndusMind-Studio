@@ -74,7 +74,15 @@ async function parseResponse<T>(resp: Response, hasAuth: boolean): Promise<T> {
     throw new ApiError(401, "登录已过期，请重新登录", undefined, 401);
   }
   if (resp.status === 403) {
-    const message = "没有访问权限，请联系管理员分配相应权限";
+    // 后端 403 往往带有具体原因（如登录时的「该账号无权访问当前端」），
+    // 直接覆盖成通用文案会让用户无法判断是权限不足还是登错了端，故优先沿用后端消息。
+    let message = "没有访问权限，请联系管理员分配相应权限";
+    try {
+      const payload = (await resp.json()) as ApiResponse<T>;
+      if (payload?.message) message = payload.message;
+    } catch {
+      /* 响应体非 JSON 时沿用默认文案 */
+    }
     errorMessageHandler(message);
     throw new ApiError(403, message, undefined, 403);
   }

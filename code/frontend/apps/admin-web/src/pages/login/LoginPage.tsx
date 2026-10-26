@@ -92,6 +92,9 @@ export default function LoginPage() {
         </Form>
         <div style={{ marginTop: 14, fontSize: 12, color: token.colorTextTertiary, textAlign: "center" }}>
           默认账号 admin / Admin@123，首次登录后建议修改密码
+          <div style={{ marginTop: 4, color: token.colorTextQuaternary }}>
+            本端仅限管理端账号，工程师等业务账号请从用户端登录
+          </div>
         </div>
       </div>
     </div>
